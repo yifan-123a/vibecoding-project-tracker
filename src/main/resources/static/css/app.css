@@ -806,6 +806,54 @@ body {
     gap: 12px;
 }
 
+/* ------------------------------------------------------- context block (M9) */
+
+.context-block {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 2px;
+    padding-top: 14px;
+    border-top: 1px solid var(--c-line-hairline);
+}
+
+.field-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.field-head label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--c-ink-muted);
+}
+
+.context-updated {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.02em;
+    color: var(--c-ink-muted);
+}
+
+/* Markdown in, Markdown out: the field reads like what it will be copied as. */
+.field .context-area {
+    min-height: 132px;
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 12.5px;
+    line-height: 1.55;
+}
+
+.field-tool {
+    max-width: 210px;
+}
+
+.label-hint {
+    font-weight: 400;
+    color: color-mix(in srgb, var(--c-ink-muted) 70%, #fff);
+}
+
 .field-error {
     margin: 0;
     font-size: 11.5px;

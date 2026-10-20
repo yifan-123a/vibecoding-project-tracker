@@ -39,6 +39,8 @@ public class TaskController {
         model.addAttribute("modal", mode);
         if (taskId != null) {
             model.addAttribute("taskId", taskId);
+            taskService.find(taskId).ifPresent(task ->
+                    model.addAttribute("contextUpdatedLabel", TimeAgo.format(task.getContextUpdatedAt())));
         }
         return "index";
     }

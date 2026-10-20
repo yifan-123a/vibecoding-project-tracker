@@ -19,6 +19,10 @@ public class TaskService {
     /** The only legal values for {@code Task.assignee} (PRD §8). */
     public static final List<String> ASSIGNEES = List.of("Yifan", "AI");
 
+    /** M9: the tools a context can be written for. Empty means "not set". */
+    public static final List<String> AI_TOOLS =
+            List.of("Claude", "ChatGPT", "Cursor", "Lovable", "Replit", "Other");
+
     private static final Comparator<TaskView> CARD_ORDER =
             Comparator.comparingInt((TaskView view) -> view.dueState().ordinal());
 
@@ -60,6 +64,8 @@ public class TaskService {
         form.setStatus(task.getStatus());
         form.setAssignee(task.getAssignee());
         form.setDueDate(task.getDueDate());
+        form.setContext(task.getContext());
+        form.setContextTool(task.getContextTool());
         return form;
     }
 
@@ -72,12 +78,27 @@ public class TaskService {
                 form.getAssignee().trim(),
                 form.getDueDate());
         task.setDescription(trimToNull(form.getDescription()));
+        String context = trimToNull(form.getContext());
+        task.setContext(context);
+        task.setContextTool(contextTool(form.getContextTool()));
+        if (context != null) {
+            // M9: the timestamp is set by the service, never typed by the user.
+            task.setContextUpdatedAt(LocalDateTime.now());
+        }
         return repository.save(task);
     }
 
     @Transactional
     public Optional<Task> update(Long id, TaskForm form) {
         return repository.findById(id).map(task -> {
+            String context = trimToNull(form.getContext());
+            // Only a real edit to the text bumps the "updated N ago" stamp;
+            // saving the form for another field must not make it lie.
+            if (!java.util.Objects.equals(context, task.getContext())) {
+                task.setContextUpdatedAt(context == null ? null : LocalDateTime.now());
+            }
+            task.setContext(context);
+            task.setContextTool(contextTool(form.getContextTool()));
             task.setTitle(form.getTitle().trim());
             task.setDescription(trimToNull(form.getDescription()));
             task.setType(form.getType());
@@ -161,6 +182,11 @@ public class TaskService {
             return "Due tomorrow";
         }
         return "Due in " + days + " days";
+    }
+
+    /** Only the six known tools are stored; anything else becomes "not set". */
+    private static String contextTool(String candidate) {
+        return AI_TOOLS.contains(candidate) ? candidate : null;
     }
 
     private static String trimToNull(String value) {

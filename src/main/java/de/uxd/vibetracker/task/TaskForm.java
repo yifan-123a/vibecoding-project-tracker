@@ -34,6 +34,29 @@ public class TaskForm {
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate dueDate;
 
+    /** M9: the curated briefing that makes Copy Context worth anything. */
+    @Size(max = 4000, message = "Keep the context under 4000 characters.")
+    private String context;
+
+    /** M9: which tool the context was written for; blank is allowed. */
+    private String contextTool;
+
+    public String getContext() {
+        return context;
+    }
+
+    public void setContext(String context) {
+        this.context = context;
+    }
+
+    public String getContextTool() {
+        return contextTool;
+    }
+
+    public void setContextTool(String contextTool) {
+        this.contextTool = contextTool;
+    }
+
     public String getTitle() {
         return title;
     }

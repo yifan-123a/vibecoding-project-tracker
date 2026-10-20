@@ -44,6 +44,7 @@ public class BoardController {
             model.addAttribute("form", taskService.formFor(task.get()));
             model.addAttribute("modal", "edit");
             model.addAttribute("taskId", task.get().getId());
+            model.addAttribute("contextUpdatedLabel", TimeAgo.format(task.get().getContextUpdatedAt()));
         } else if (Boolean.TRUE.equals(create)) {
             model.addAttribute("form", new TaskForm());
             model.addAttribute("modal", "create");

@@ -197,6 +197,29 @@
                 <p class="field-error" th:if="${#fields.hasErrors('description')}" th:errors="*{description}"></p>
             </div>
 
+            <!-- M9: the differentiator. Everything below exists so the next chat
+                 window does not have to start from zero. -->
+            <section class="context-block">
+                <div class="field-head">
+                    <label for="f-context">Context</label>
+                    <span class="context-updated" th:if="${contextUpdatedLabel != null}"
+                          th:text="'Updated ' + ${contextUpdatedLabel}">Updated 2 h ago</span>
+                    <span class="context-updated" th:if="${contextUpdatedLabel == null}">Not written yet</span>
+                </div>
+                <textarea id="f-context" class="context-area" rows="6" maxlength="4000"
+                          th:field="*{context}"
+                          placeholder="**Background** — why does this task exist?&#10;**Constraints** — what must not break?&#10;**Tried so far** — what did the AI already attempt?&#10;**Pick up** — what is the next concrete step?"></textarea>
+                <p class="field-error" th:if="${#fields.hasErrors('context')}" th:errors="*{context}"></p>
+
+                <div class="field field-tool">
+                    <label for="f-tool">Written for <span class="label-hint">(optional)</span></label>
+                    <select id="f-tool" th:field="*{contextTool}">
+                        <option value="">Not specified</option>
+                        <option th:each="tool : ${aiTools}" th:value="${tool}" th:text="${tool}">Claude</option>
+                    </select>
+                </div>
+            </section>
+
             <footer class="modal-foot">
                 <button type="submit" class="btn btn-danger" th:if="${modal == 'edit'}"
                         th:formaction="@{/tasks/{id}/delete(id=${taskId})}"

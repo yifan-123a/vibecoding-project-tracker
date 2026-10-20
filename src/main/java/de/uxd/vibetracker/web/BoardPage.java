@@ -39,6 +39,7 @@ public class BoardPage {
         model.addAttribute("themeCss", settingsService.themeCss(settings));
         model.addAttribute("today", now.toLocalDate());
         model.addAttribute("team", TEAM);
+        model.addAttribute("aiTools", TaskService.AI_TOOLS);
         model.addAttribute("types", TaskType.values());
         model.addAttribute("statuses", TaskStatus.values());
     }
