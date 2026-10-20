@@ -253,8 +253,8 @@ warmed a few minutes before the pitch.
 | done | PRD v2 + DESIGN v2 + tokens | no placeholder markers left |
 | done | Spring Boot scaffold: entities, services, controllers, seeder, H2 | `mvn package` runs, board renders 6 seeds |
 | done | FR-1/2/3/9/11/17: four columns, cards, type colour, due tint, colour drawer | board + live recolour verified by screenshot |
-| next | FR-4..FR-7 (M5): add / edit / delete via a modal, form POST + redirect | create, edit, delete survive a reload |
-| next | FR-10 (M7): assignee + reassign | badge on card, toast on reassign |
+| done | FR-4..FR-7 (M5): add / edit / delete via a modal, form POST + redirect | create, edit, delete survive a reload |
+| done | FR-10 (M7): assignee + reassign | badge on card, assignment saved from the modal |
 | later | FR-12/13 (M9/M10): context field + Copy Context Markdown | pasted block reads cleanly in an AI chat |
 | later | FR-14/15/16 (M11–M13): anchors, differentiator, demo data | rehearsed 5-minute talk track |
 

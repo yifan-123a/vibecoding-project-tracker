@@ -26,10 +26,7 @@
         <button type="button" class="btn btn-ghost" data-open-settings aria-haspopup="dialog">
             Colours
         </button>
-        <button type="button" class="btn btn-primary" disabled
-                title="Add task — arrives with the modal milestone">
-            + Task
-        </button>
+        <a class="btn btn-primary" th:href="@{/(create=true)}">+ Task</a>
     </div>
 </header>
 
@@ -43,9 +40,10 @@
         <div class="cards">
             <p class="empty" th:if="${col.empty}">Nothing here yet — keep going.</p>
 
-            <article class="card"
-                     th:each="card : ${col.tasks}"
-                     th:classappend="${'type-' + #strings.toLowerCase(card.type.name()) + ' is-' + card.dueState.cssClass}">
+            <a class="card"
+               th:each="card : ${col.tasks}"
+               th:href="@{/(edit=${card.id})}"
+               th:classappend="${'type-' + #strings.toLowerCase(card.type.name()) + ' is-' + card.dueState.cssClass}">
                 <div class="card-meta">
                     <span class="chip" th:text="${card.type.label}">Feature</span>
                     <span class="due" th:text="${card.dueLabel}">Due in 3 days</span>
@@ -61,7 +59,7 @@
                     <span class="avatar" th:text="${card.initials}" th:attr="title=${card.assignee}">Y</span>
                     <span class="assignee" th:text="${card.assignee}">Yifan</span>
                 </footer>
-            </article>
+            </a>
         </div>
     </section>
 </main>
@@ -107,6 +105,80 @@
 </aside>
 
 <div class="toast" data-toast th:if="${toast}" th:text="${toast}">Colours saved.</div>
+
+<!-- ---------------------------------------------------------------- task modal (M5) -->
+<div class="modal-layer" th:if="${modal != null}">
+    <div class="modal-scrim" data-close-modal></div>
+
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+        <header class="modal-head">
+            <div>
+                <h2 id="modal-title" th:text="${modal == 'edit'} ? 'Edit task' : 'New task'">New task</h2>
+                <p class="modal-sub" th:if="${modal == 'edit'}">
+                    Leaving the status alone keeps the card where it is.
+                </p>
+            </div>
+            <button type="button" class="icon-btn" data-close-modal aria-label="Close">&#10005;</button>
+        </header>
+
+        <form class="modal-body" method="post" th:object="${form}"
+              th:action="${modal == 'edit'} ? @{/tasks/{id}(id=${taskId})} : @{/tasks}"
+              data-task-form>
+
+            <p class="form-error" th:if="${#fields.hasGlobalErrors()}">
+                <span th:each="err : ${#fields.globalErrors()}" th:text="${err}">Error</span>
+            </p>
+
+            <div class="field">
+                <label for="f-title">Title</label>
+                <input id="f-title" type="text" th:field="*{title}" maxlength="120"
+                       autocomplete="off" placeholder="What needs to happen?" autofocus>
+                <p class="field-error" th:if="${#fields.hasErrors('title')}" th:errors="*{title}"></p>
+            </div>
+
+            <div class="field-grid">
+                <div class="field">
+                    <label for="f-type">Type</label>
+                    <select id="f-type" th:field="*{type}">
+                        <option th:each="t : ${types}" th:value="${t}" th:text="${t.label}">Feature</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="f-status">Status</label>
+                    <select id="f-status" th:field="*{status}">
+                        <option th:each="s : ${statuses}" th:value="${s}" th:text="${s.label}">To Do</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="f-assignee">Assignee</label>
+                    <select id="f-assignee" th:field="*{assignee}">
+                        <option th:each="who : ${team}" th:value="${who}" th:text="${who}">Yifan</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="f-due">Due date</label>
+                    <input id="f-due" type="date" th:field="*{dueDate}">
+                </div>
+            </div>
+
+            <div class="field">
+                <label for="f-desc">Description</label>
+                <textarea id="f-desc" rows="3" maxlength="2000" th:field="*{description}"
+                          placeholder="What is the shape of the work? Leave it empty if the title says it all."></textarea>
+                <p class="field-error" th:if="${#fields.hasErrors('description')}" th:errors="*{description}"></p>
+            </div>
+
+            <footer class="modal-foot">
+                <button type="submit" class="btn btn-danger" th:if="${modal == 'edit'}"
+                        th:formaction="@{/tasks/{id}/delete(id=${taskId})}"
+                        formnovalidate data-confirm-delete>Delete</button>
+                <span class="spacer"></span>
+                <button type="button" class="btn btn-ghost" data-close-modal>Cancel</button>
+                <button type="submit" class="btn btn-primary">Save</button>
+            </footer>
+        </form>
+    </div>
+</div>
 
 <script th:src="@{/js/app.js}"></script>
 </body>

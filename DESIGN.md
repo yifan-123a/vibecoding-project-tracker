@@ -48,6 +48,7 @@ is slate. If a screen has more than three saturated elements, it is wrong.
 | `surface-card` | `#FFFFFF` | Card background, modal background, anchor slots |
 | `ink-primary` | `#0F172A` | Body text, card titles |
 | `ink-muted` | `#64748B` | Captions, dates, counts, placeholders |
+| `danger` | `#B91C1C` | Delete button, validation messages — fixed, never themed |
 
 ### Task type (M6 `tag-style`)
 

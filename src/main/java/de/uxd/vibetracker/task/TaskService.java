@@ -1,6 +1,7 @@
 package de.uxd.vibetracker.task;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -9,6 +10,7 @@ import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 public class TaskService {
@@ -39,6 +41,56 @@ public class TaskService {
             columns.add(new ColumnView(status.getId(), status.getLabel(), tasks));
         }
         return columns;
+    }
+
+    public Optional<Task> find(Long id) {
+        return repository.findById(id);
+    }
+
+    /** Pre-fill the modal from the entity (M5, edit mode). */
+    public TaskForm formFor(Task task) {
+        TaskForm form = new TaskForm();
+        form.setTitle(task.getTitle());
+        form.setDescription(task.getDescription());
+        form.setType(task.getType());
+        form.setStatus(task.getStatus());
+        form.setAssignee(task.getAssignee());
+        form.setDueDate(task.getDueDate());
+        return form;
+    }
+
+    @Transactional
+    public Task create(TaskForm form) {
+        Task task = new Task(
+                form.getTitle().trim(),
+                form.getType(),
+                form.getStatus(),
+                form.getAssignee().trim(),
+                form.getDueDate());
+        task.setDescription(trimToNull(form.getDescription()));
+        return repository.save(task);
+    }
+
+    @Transactional
+    public Optional<Task> update(Long id, TaskForm form) {
+        return repository.findById(id).map(task -> {
+            task.setTitle(form.getTitle().trim());
+            task.setDescription(trimToNull(form.getDescription()));
+            task.setType(form.getType());
+            task.setStatus(form.getStatus());
+            task.setAssignee(form.getAssignee().trim());
+            task.setDueDate(form.getDueDate());
+            return repository.save(task);
+        });
+    }
+
+    @Transactional
+    public boolean delete(Long id) {
+        if (!repository.existsById(id)) {
+            return false;
+        }
+        repository.deleteById(id);
+        return true;
     }
 
     TaskView toView(Task task, LocalDate today) {
@@ -87,5 +139,13 @@ public class TaskService {
             return "Due tomorrow";
         }
         return "Due in " + days + " days";
+    }
+
+    private static String trimToNull(String value) {
+        if (value == null) {
+            return null;
+        }
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? null : trimmed;
     }
 }

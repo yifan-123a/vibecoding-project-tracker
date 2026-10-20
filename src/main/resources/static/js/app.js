@@ -112,6 +112,42 @@
         });
     });
 
+    /* ------------------------------------------------------------- task modal */
+
+    const modal = document.querySelector('.modal');
+    if (modal) {
+        // The modal is server-rendered from a URL (?create / ?edit=id), so
+        // "closing" is just going back to the plain board. The back button and
+        // a bookmarked URL behave the same way.
+        function closeModal() {
+            window.location.assign('/');
+        }
+
+        document.querySelectorAll('[data-close-modal]').forEach(function (element) {
+            element.addEventListener('click', closeModal);
+        });
+
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape') {
+                closeModal();
+            }
+        });
+
+        const deleteButton = modal.querySelector('[data-confirm-delete]');
+        if (deleteButton) {
+            deleteButton.addEventListener('click', function (event) {
+                if (!window.confirm("Delete this task? It won't come back.")) {
+                    event.preventDefault();
+                }
+            });
+        }
+
+        const firstField = modal.querySelector('input:not([type=hidden]), select, textarea');
+        if (firstField) {
+            firstField.focus();
+        }
+    }
+
     /* ----------------------------------------------------------------- toast */
 
     const toast = document.querySelector('[data-toast]');

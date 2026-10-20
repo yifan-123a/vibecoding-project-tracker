@@ -1,5 +1,10 @@
 server:
   port: 8080
+  servlet:
+    session:
+      # Flash messages need a session; keep it in a cookie so the ;jsessionid
+      # never shows up in a redirect URL.
+      tracking-modes: cookie
 
 spring:
   application:
