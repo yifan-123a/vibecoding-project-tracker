@@ -45,7 +45,17 @@
                th:href="@{/(edit=${card.id})}"
                th:classappend="${'type-' + #strings.toLowerCase(card.type.name()) + ' is-' + card.dueState.cssClass}">
                 <div class="card-meta">
-                    <span class="chip" th:text="${card.type.label}">Feature</span>
+                    <span class="chip">
+                        <svg class="chip-icon" viewBox="0 0 24 24" aria-hidden="true"
+                             th:if="${card.type.name() == 'FEATURE'}">
+                            <path d="M13 2 4 14h6l-1 8 9-12h-6z"/>
+                        </svg>
+                        <svg class="chip-icon" viewBox="0 0 24 24" aria-hidden="true"
+                             th:if="${card.type.name() == 'BUG'}">
+                            <path fill-rule="evenodd" d="M12 3 22 21 2 21z M11 9h2v6h-2z M11 17h2v2h-2z"/>
+                        </svg>
+                        <span th:text="${card.type.label}">Feature</span>
+                    </span>
                     <span class="due" th:text="${card.dueLabel}">Due in 3 days</span>
                 </div>
 
