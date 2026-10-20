@@ -42,9 +42,14 @@ export const STAGES = [
   { id: 'done',        label: 'Done' },
 ];
 
-// Replace these placeholders with the three names from PRD §8 before M4.
-// They become the only valid values for `Task.assignee`.
-export const TEAM = ['Teammate A', 'Teammate B', 'Teammate C'];
+// The only valid values for `Task.assignee` — see PRD §8.
+// Solo build: `AI` is a pseudo-assignee so ownership / reassignment (M7)
+// is still demonstrable without a second human in the room.
+export const TEAM = ['Yifan', 'AI'];
+
+// Team identity — PRD §11 / DESIGN.md §6.
+export const PRODUCT = 'VibeTracker';
+export const TAGLINE = 'Track the task, keep the context.';
 
 /**
  * A tiny localStorage hook — survives reloads, no library needed.
@@ -87,13 +92,11 @@ export default function App() {
     <div className="min-h-screen p-6">
       <header className="mb-6 flex items-end justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">
-            Vibecoding Project Tracker
+          <h1 className="text-2xl tracking-tight text-brand-primary">
+            Vibe<span className="font-semibold">Tracker</span>
+            <span className="text-brand-accent">.</span>
           </h1>
-          <p className="text-sm text-slate-500">
-            {/* Replace this line with your team name from PRD §11. */}
-            Team starter
-          </p>
+          <p className="text-sm text-ink-muted">{TAGLINE}</p>
         </div>
       </header>
 
