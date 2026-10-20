@@ -53,7 +53,7 @@ git push
 | 7 | `task-owner` | Assignee badge + reassign | done (badge + "Hand off" on the card) |
 | 8 | `due-tint` | Cards tint by deadline | done (+ colour key under the board) |
 | 9 | `context` | Context field on the task modal | done (textarea + AI tool + "updated N ago") |
-| 10 | `copy-prompt` | One-click copy of the Markdown briefing | next |
+| 10 | `copy-prompt` | One-click copy of the Markdown briefing | done (card button + modal button) |
 | 11 | `project-deliverables` | Deliverable anchor banner | later |
 | 12 | `secret-sauce` | The one thing that makes it yours | later |
 | 13 | `pitch-ready` | Demo dataset + rehearsed pitch | later |

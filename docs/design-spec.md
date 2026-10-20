@@ -258,7 +258,7 @@ warmed a few minutes before the pitch.
 | done | FR-4..FR-7 (M5): add / edit / delete via a modal, form POST + redirect | create, edit, delete survive a reload |
 | done | FR-10 (M7): assignee + reassign | badge on card, assignment saved from the modal |
 | done | FR-12 (M9): Context field, AI-tool select, "updated N ago" | context survives reload; stamp only moves on a real edit |
-| later | FR-13 (M10): Copy Context Markdown + toast | pasted block reads cleanly in an AI chat |
+| done | FR-13 (M10): Copy Context Markdown + toast | `GET /tasks/{id}/context` returns a paste-ready block; button copies it |
 | later | FR-14/15/16 (M11–M13): anchors, differentiator, demo data | rehearsed 5-minute talk track |
 
 ---

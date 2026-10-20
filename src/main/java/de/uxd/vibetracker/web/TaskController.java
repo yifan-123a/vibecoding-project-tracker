@@ -7,11 +7,13 @@ import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.Optional;
@@ -95,5 +97,18 @@ public class TaskController {
                 .map(task -> "Handed off to " + task.getAssignee() + ".")
                 .orElse("That task no longer exists."));
         return "redirect:/";
+    }
+
+    /**
+     * The Markdown a Copy Context button puts on the clipboard (M10).
+     * Served as a document rather than embedded in the page: it can be opened in
+     * a browser tab, curled, or pasted into a chat without the UI in the way.
+     */
+    @GetMapping(value = "/{id}/context", produces = "text/markdown;charset=UTF-8")
+    @ResponseBody
+    public String context(@PathVariable Long id) {
+        return taskService.find(id)
+                .map(ContextMarkdown::render)
+                .orElse("# Task not found\n");
     }
 }

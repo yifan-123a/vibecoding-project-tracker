@@ -148,6 +148,76 @@
         }
     }
 
+    /* ------------------------------------------------------- copy context (M10) */
+
+    function showToast(message) {
+        const previous = document.querySelector('[data-js-toast]');
+        if (previous) {
+            previous.remove();
+        }
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.setAttribute('data-js-toast', '');
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        window.setTimeout(function () {
+            toast.style.transition = 'opacity 200ms ease';
+            toast.style.opacity = '0';
+            window.setTimeout(function () {
+                toast.remove();
+            }, 220);
+        }, 2400);
+    }
+
+    async function copyText(text) {
+        if (navigator.clipboard && window.isSecureContext) {
+            try {
+                await navigator.clipboard.writeText(text);
+                return true;
+            } catch (error) {
+                /* fall through to the textarea path */
+            }
+        }
+        // Needed when the demo is opened over plain http on a LAN address,
+        // where the async clipboard API is not available.
+        const area = document.createElement('textarea');
+        area.value = text;
+        area.setAttribute('readonly', '');
+        area.style.position = 'fixed';
+        area.style.top = '-1000px';
+        document.body.appendChild(area);
+        area.select();
+        let copied = false;
+        try {
+            copied = document.execCommand('copy');
+        } catch (error) {
+            copied = false;
+        }
+        area.remove();
+        return copied;
+    }
+
+    document.querySelectorAll('[data-copy-url]').forEach(function (button) {
+        button.addEventListener('click', async function () {
+            try {
+                const response = await fetch(button.dataset.copyUrl, {
+                    headers: { Accept: 'text/markdown' }
+                });
+                if (!response.ok) {
+                    throw new Error('HTTP ' + response.status);
+                }
+                const markdown = await response.text();
+                const copied = await copyText(markdown);
+                button.classList.toggle('copied', copied);
+                showToast(copied
+                    ? 'Copied. Paste it into your AI.'
+                    : 'Copy was blocked — select the text manually.');
+            } catch (error) {
+                showToast('Copy failed — is the server still running?');
+            }
+        });
+    });
+
     /* ----------------------------------------------------------------- toast */
 
     const toast = document.querySelector('[data-toast]');

@@ -381,7 +381,44 @@ body {
 .handoff {
     position: relative;
     z-index: 2;
+    margin-left: 2px;
+}
+
+/* M10: the same click target as the modal's Copy Context, one level smaller. */
+.copy-btn {
+    position: relative;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
     margin-left: auto;
+    padding: 1px 6px;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    background: none;
+    font: inherit;
+    font-size: 11px;
+    color: var(--c-ink-muted);
+    cursor: pointer;
+    transition: background-color 150ms var(--ease), color 150ms var(--ease),
+        border-color 150ms var(--ease);
+}
+
+.copy-btn:hover {
+    background: var(--c-surface-sunken);
+    border-color: var(--c-line-hairline);
+    color: var(--c-ink-primary);
+}
+
+.copy-btn.copied {
+    color: var(--c-brand-primary);
+}
+
+.copy-icon {
+    flex: none;
+    width: 11px;
+    height: 11px;
+    fill: currentColor;
 }
 
 .handoff summary {
