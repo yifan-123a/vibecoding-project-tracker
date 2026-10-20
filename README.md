@@ -1,98 +1,96 @@
-# Vibecoding Project Tracker — Hackathon Starter
+# VibeTracker — Vibecoding Project Tracker
 
-You're forking this repo as the starting point for the **UXD Vibecoding Hackathon 2026**. The goal of the hackathon is to ship a Vibecoding Project Tracker in ~3 hours: a Kanban-style tool that tracks your vibecoding tasks and stores the prompts that produced them.
+A Kanban tool that tracks vibecoding tasks **and the context that produced them**. Started as the
+**UXD Vibecoding Hackathon 2026** starter; this fork is a solo build on a different stack.
 
-This starter gives you:
+What this fork has:
 
-- A pre-written **PRD** (`PRD.md`) — read it. You don't write the PRD this year; your Milestone 2 is to review, fill in the team-specific TODOs, and commit.
-- A pre-written **DESIGN.md** with the design-system slots Person B fills in during M3 (in parallel with M2).
-- A **Vite + React + Tailwind** scaffold with the boilerplate already configured.
-- The locked `Task` data model and `STAGES` constant in `src/App.jsx`.
-- A `useLocalStorage` hook so persistence is one line.
-- Empty TODO markers for every milestone, so AI tools can find them.
+- **PRD** (`PRD.md`) — scope, data model, priorities, definition of done (filled in, v2).
+- **DESIGN.md** — palette, typography, component rules, voice (filled in, v2).
+- **One Spring Boot app** — Thymeleaf on the server, plain CSS/JS in the browser, H2 on disk.
+- The task model as a JPA entity, with the due-state logic derived in `TaskService`.
+- **User-editable state colours** — the six semantic colours are CSS variables, changed from a drawer.
 
-What you build, starting at M4:
-
-- The four-column Kanban board.
-- The add / edit / delete modal.
-- The Prompt Context field (the differentiator).
-- The "Copy as Prompt Context" button (the demo's hero moment).
-- And everything else through M13.
+Built so far: the board, the colour drawer, seeding, persistence. Next: the add/edit/delete modal, the
+Context field, and the Copy Context button — the demo's hero moment.
 
 ## Quick start
 
 ```bash
-# 1. Fork this repo on GitHub. Then clone YOUR fork:
+# 1. Clone your fork
 git clone https://github.com/<your-team>/<your-fork>.git
 cd <your-fork>
 
-# 2. Install dependencies
-npm install
-
-# 3. Run the dev server
-npm run dev
+# 2. Run it — needs a JDK. The build targets Java 25 (Boot 3.5 works on 21+).
+mvn spring-boot:run
 ```
 
-Open the URL Vite prints (typically `http://localhost:5173`). You should see a placeholder page with the team starter header and "Build the four-column board here · M3" in the middle. That's expected — M3 is your first build milestone.
+Open `http://localhost:8080`. The board renders on the server from an embedded H2 database that is seeded
+with six demo tasks on first start, so there is nothing to install and no frontend build.
 
-## Milestone workflow
+> This repo was originally a Vite + React scaffold. It is now a single Spring Boot application with
+> Thymeleaf templates — see `PRD.md` §6 for why. The old frontend files are gone; `git log` has them if you
+> are curious.
 
-Every milestone ends with a git tag push. The Hackathon Portal dashboard watches your tags and updates the scoreboard in near real time.
+## Commit rhythm
+
+Milestone tags are **not graded** in this run (confirmed by the course lead), so they are kept only as a
+progress log. What still matters is one commit per working slice:
 
 ```bash
-git add .
-git commit -m "<tag-name>"
-git tag <tag-name>
-git push --tags
+git add . && git commit -m "M5 crud-modal: add/edit/delete + persistence"
+git push
 ```
 
-Replace `<tag-name>` with the tag for the milestone you just finished — see the table below. Tag names are lowercase, hyphenated, exact.
-
-| # | Tag | What it means |
-|---|---|---|
-| 1 | `git-linked` | Repo registered on the portal, webhook delivers test ping |
-| 2 | `prd-done` | PRD reviewed, team-specific TODOs filled in |
-| 3 | `design-done` | DESIGN.md filled in, color tokens pasted into `tailwind.config.js` (parallel to M2) |
-| 4 | `data-model` | Four-column board renders with 3-4 mock tasks |
-| 5 | `crud-modal` | Add / edit / delete tasks via a modal, persisted to localStorage |
-| 6 | `tag-style` | Feature vs. bug visual distinction |
-| 7 | `task-owner` | Assignee badge on each card + "Hand off to..." dropdown |
-| 8 | `due-tint` | Cards change color as deadlines approach |
-| 9 | `context` | Curated Context field on the task modal (paste-ready briefing) |
-| 10 | `copy-prompt` | One-click copy formatted prompt to clipboard |
-| 11 | `project-deliverables` | Deliverable Anchor Board pinned above the Kanban |
-| 12 | `secret-sauce` | The one thing that makes your tracker uniquely yours (open-ended) |
-| 13 | `pitch-ready` | Demo dataset loaded, pitch rehearsed |
+| # | Tag (optional) | What it meant | Status here |
+|---|---|---|---|
+| 1 | `git-linked` | Repo registered on the portal | done |
+| 2 | `prd-done` | PRD reviewed and filled in | done |
+| 3 | `design-done` | DESIGN.md filled in, tokens defined | done |
+| 4 | `data-model` | Four-column board renders with demo tasks | done |
+| 5 | `crud-modal` | Add / edit / delete via a modal, persisted | next |
+| 6 | `tag-style` | Feature vs. bug visual distinction | done |
+| 7 | `task-owner` | Assignee badge + reassign | partial (badge only) |
+| 8 | `due-tint` | Cards tint by deadline | done |
+| 9 | `context` | Context field on the task modal | next |
+| 10 | `copy-prompt` | One-click copy of the Markdown briefing | next |
+| 11 | `project-deliverables` | Deliverable anchor banner | later |
+| 12 | `secret-sauce` | The one thing that makes it yours | later |
+| 13 | `pitch-ready` | Demo dataset + rehearsed pitch | later |
 
 ## Repo map
 
 ```
 .
-├── PRD.md              ← READ THIS FIRST · review + fill in TODOs for M2
-├── DESIGN.md           ← Person B fills this in for M3 (parallel to M2)
-├── README.md           ← you are here
-├── package.json
-├── vite.config.js
-├── tailwind.config.js  ← M3 design tokens land here too
-├── postcss.config.js
-├── index.html
-├── .gitignore
-└── src/
-    ├── main.jsx        ← React entry point — don't change
-    ├── index.css       ← Tailwind directives — don't change
-    └── App.jsx         ← all your code goes here (or split into more files)
+├── PRD.md                     ← scope, data model, priorities (v2, solo)
+├── DESIGN.md                  ← palette, type, component rules, voice
+├── README.md                  ← you are here
+├── pom.xml                    ← Spring Boot 3.5 · Java 25 · web, thymeleaf, data-jpa, h2
+├── docs/
+│   ├── design-spec.md         ← FR/NFR, routes, module layout, build order
+│   └── shots/                 ← screenshots of the current board and drawer
+└── src/main/
+    ├── java/de/uxd/vibetracker/
+    │   ├── task/              Task, statuses, TaskService (board + due states)
+    │   ├── settings/          the six user-editable colours
+    │   ├── web/               BoardController, SettingsController
+    │   └── seed/              six demo tasks on first start
+    └── resources/
+        ├── application.yml    port 8080, H2 file db at ./data
+        ├── templates/index.html
+        └── static/css/app.css · static/js/app.js
 ```
 
-## Deploy (any time after M3)
+## Deploy
 
-Vercel's free tier deploys a Vite + React app in one click:
+There is nothing to deploy separately: `mvn package` produces one executable JAR.
 
-1. Go to [vercel.com](https://vercel.com), sign in with GitHub.
-2. Import your fork.
-3. Accept the defaults (Vite is auto-detected). Click Deploy.
-4. Drop the resulting URL into PRD §11 and into your team chat.
+```bash
+java -jar target/vibetracker-0.1.0.jar
+```
 
-Re-deploys happen automatically on every push to `main`.
+For the live demo, run it locally — predictable latency, no cold start, and the seeded database is already
+in `./data`. A public host works too (Render, Fly, Railway); warm it a few minutes before the pitch.
 
 ## A word about prompts
 

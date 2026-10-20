@@ -44,8 +44,8 @@ can click one button and copy the task plus its briefing back into a chat to con
 
 ## 4. Primary user flow
 
-1. Open the web app. The board loads from the API; if the API is unreachable it renders the last cached
-   snapshot and shows an offline badge.
+1. Open the web app. The board is rendered on the server from the database, so there is no spinner, no
+   client fetch and nothing to cache: the HTML that arrives is the board.
 2. Click "+" to add a task: title, type, assignee, due date, description, and the context briefing.
 3. Change status in the modal as work progresses (no drag-and-drop — see DESIGN.md §4).
 4. When stuck, click **Copy Context** on a task and paste it into Claude / ChatGPT / Cursor to continue.
@@ -108,19 +108,17 @@ expanded, anything else is rejected and the default stays).
 
 | Layer | Choice | Why |
 |---|---|---|
-| UI | React 18 + Vite | What the scaffold ships with. Don't migrate. |
-| Styling | Tailwind, tokens in `tailwind.config.js` | Already configured. Utility classes only, no separate CSS files. |
-| Theming | CSS custom properties (`--c-<token>`) + Tailwind `rgb(var(--c-token) / <alpha-value>)` | The user changes state colours at runtime; a variable swap repaints instantly, with no rebuild and no class juggling. |
-| State | `useState` + custom hooks | One `useTasks` hook owns the collection; no Redux for this size. |
-| Data access | A single `store` module with two implementations (`local`, `http`) | Components never call `fetch`. One env var switches backends. |
-| API | **Spring Boot 3.5**, Java 25, Spring Web + Data JPA + Validation | Real persistence, real CRUD contract, and it doubles as the M5 data model. |
+| UI | **Thymeleaf** server-rendered templates | One runtime. The board is HTML the server already knows how to produce — no SPA, no client fetch, no hydration. |
+| Styling | One hand-written stylesheet (`app.css`) on CSS custom properties | No build step and no JIT; every colour is already a variable, which is exactly what the colour picker needs. |
+| Behaviour | Vanilla JS (`app.js`, no framework) | It does two things: open the drawer, preview a colour. A framework would cost more than it saves. |
+| Backend | **Spring Boot 3.5** (Java 25), Spring MVC + Thymeleaf + Data JPA + Validation | Real persistence and a real CRUD surface; form POST → redirect is enough for this UI. |
 | Database | H2, file-based (`jdbc:h2:file:./data/vibetracker`) | Zero-install, survives restarts, no migration scripts. |
-| Cache | localStorage, write-through | If the API dies, the board still renders. Demo safety. |
-| Deploy | Vercel (static frontend) · JAR on the laptop for the live demo | Vercel cannot host a JVM; a free-tier JVM host cold-starts in 30–60 s, which is a pitch risk. |
+| Theming | CSS variables injected inline from `Settings` | The user's colours arrive with the HTML, so there is no flash of the defaults and no client state. |
+| Deploy | One executable JAR (`mvn package`) | A static host cannot run a JVM; the JAR on the laptop is the most reliable thing to demo. |
 
-> **Decision:** the backend is deliberate, not scope creep — it is what makes `assignee`, `context` and
-> `contextUpdatedAt` real shared state instead of browser-local trivia. But the **demo must never depend on
-> it**: `VITE_DATA_SOURCE=local` is the one-line fallback.
+> **Decision:** one process, server-rendered. That is why the earlier React/Vite scaffold was removed — it
+> would have meant two builds, an API seam, CORS, and a client-side copy of the state, for a board that is
+> four lists. The backend is what makes `assignee`, `context` and `contextUpdatedAt` real shared state.
 
 ## 7. Stage names
 
@@ -196,8 +194,7 @@ History" deliverable, at zero extra cost.
 
 - **Team name:** VibeTracker
 - **Tagline (one sentence):** Track the task, keep the context.
-- **Tracker URL after deploy:** `http://localhost:5173` during the hackathon (Vercel URL added after the
-  first deploy).
+- **Tracker URL after deploy:** `http://localhost:8080` during the hackathon (the JAR is the deployment).
 
 ## 12. Out of scope (do not build)
 
@@ -208,6 +205,7 @@ History" deliverable, at zero extra cost.
 - Real-time collaboration, websockets, presence.
 - Notifications, email, file uploads.
 - Dark mode (see DESIGN.md §7).
+- A JSON API for third-party clients. The server renders HTML; it does not need a public REST surface.
 
 ## 13. Definition of done
 

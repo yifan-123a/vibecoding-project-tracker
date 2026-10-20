@@ -89,88 +89,80 @@ Invariants: `status = DONE` always renders due-neutral regardless of `dueDate`; 
 ## 5. Architecture
 
 ```
-React 18 + Vite + Tailwind (SPA)
-        │  fetch, JSON, camelCase
-        ▼
-Spring Boot 3.5 (REST, Java 25)  ──►  H2 (file-based, demo)
-   controller → service → repository (JPA)
-        │
-        ▼
-write-through cache in localStorage  (NFR-2 fallback)
+browser  ──HTTP(forms)──►  Spring Boot 3.5 (Java 25)
+                              controller → service → repository (JPA) ──► H2 (file)
+                              │
+                              └── Thymeleaf template + inline CSS variables + app.css
 ```
 
-Local dev: Vite on `:5173` proxies `/api` → Spring Boot on `:8080` (avoids CORS entirely in dev).
-Deployed: `VITE_API_URL` points at the hosted API; CORS allowlist holds the Vercel origin.
+One process, one port, no client state. Every interaction is a normal request:
 
-### 5.1 API contract
+| Route | Method | Purpose |
+|---|---|---|
+| `/` | GET | Render the board: four columns, cards, colour rows, theme variables |
+| `/settings` | POST | Save the six colours (form fields), redirect back to `/` |
+| `/settings/reset` | POST | Restore DESIGN.md defaults, redirect back to `/` |
+| `/tasks/new`, `/tasks/{id}`, `/tasks/{id}/delete` | GET/POST | M5 CRUD modal — next milestone |
+| `/css/app.css`, `/js/app.js` | GET | Static assets |
 
-| Method | Path | Body | Response |
-|---|---|---|---|
-| GET | `/api/tasks` | – | `200 [TaskDTO]` |
-| POST | `/api/tasks` | `TaskCreateDTO` | `201 TaskDTO` · `400` validation |
-| PUT | `/api/tasks/{id}` | `TaskCreateDTO` | `200 TaskDTO` · `404` |
-| PATCH | `/api/tasks/{id}` | partial (`status`, `assignee`, `context`) | `200 TaskDTO` |
-| DELETE | `/api/tasks/{id}` | – | `204` |
-| GET | `/api/anchors` | – | `200 [AnchorDTO]` (always 4 rows) |
-| PUT | `/api/anchors/{key}` | `{ "url": "…" }` | `200 AnchorDTO` |
-| GET | `/api/settings` | – | `200 { colors: { token: "#RRGGBB" }, updatedAt }` |
-| PUT | `/api/settings` | `{ colors: { … } }` | `200` · `400` on a malformed hex |
-| GET | `/api/health` | – | `200 {"status":"UP"}` |
+Deliberately **not** built: a JSON API. The server renders HTML; adding a REST surface nobody consumes is
+extra contract to maintain. If it is ever needed, the service layer is already the seam.
 
-`TaskDTO` mirrors the entity with `dueDate` as `"YYYY-MM-DD"` and `contextUpdatedAt` as ISO-8601.
-Errors use the Spring problem shape `{timestamp, status, error, message, path}`; the UI maps
-`message` to a toast.
+Rationale for dropping the SPA: the board is four filtered lists. A client app would add a build step, a
+fetch layer, a loading state, a cache, and a second copy of the state — for a screen that the server can
+render in one pass.
 
 ---
 
 ## 6. Frontend design
 
-### 6.1 Component tree
+### 6.1 Page structure (`templates/index.html`)
 
 ```
-App
-├── Header            product name · tagline · [+ Task]
-├── DeliverableBanner 4 × AnchorCard (label, url input, empty/filled dot)      FR-14
-├── Board             4 × Column
-│   └── Column        title · count · EmptyState
-│       └── TaskCard  type chip · title · assignee avatar · due pill           FR-9/10/11
-├── TaskModal         create | edit                                            FR-4..7/12/13
-│   ├── fields: title, description, type, status, assignee, dueDate
-│   ├── ContextSection  textarea · AI-tool select · "updated 2 h ago"
-│   └── footer: Copy Context · Delete (confirm) · Cancel · Save
-├── SettingsDrawer    6 × ColorRow (label · swatch · hex · contrast note) · Reset   FR-17
-└── ToastStack        copy / handoff / error feedback
+<header class="topbar">       wordmark · tagline · [Colours] · [+ Task]
+<main class="board">          4 × <section class="column">
+  <header class="column-head">  label · count
+  <div class="cards">          <article class="card …"> × n  |  <p class="empty">
+      .card-meta                 chip (type) · due label
+      .card-title
+      .card-desc                 (2-line clamp)
+      .card-foot                 avatar · assignee
+<aside class="drawer">        6 × .color-row (label · hint · swatch · hex · note) · Save · Reset
+<div class="toast">           flash message after save/reset
 ```
 
-### 6.2 Data access seam (the important decision)
+The card's state lives in its class list — `card type-bug is-overdue` — and the CSS resolves the colour.
+That keeps `SettingsService` free of presentation strings and makes the template readable six months later.
 
-One module, two implementations, identical async interface:
+### 6.2 No client store (the important decision)
 
-```js
-// src/data/store.js
-export const store = import.meta.env.VITE_DATA_SOURCE === 'api'
-  ? createHttpStore(import.meta.env.VITE_API_URL)   // Spring Boot
-  : createLocalStore();                             // localStorage only
+There is no state layer, no fetch wrapper and no cache: the database is the only source of truth and the
+HTML is the only copy. Consequences, accepted knowingly:
+
+- Reload = fresh read. No optimistic update, no stale cache, nothing to invalidate.
+- Two browser tabs stay consistent by accident, not by design.
+- The colour preview *is* client state, but it is write-only (it mutates a CSS variable) and the server
+  overwrites it on save. Nothing reads it back.
+- The demo has one dependency: the JAR must be running. Since it runs on the laptop with an embedded H2
+  file, that dependency has no network hop and no cold start.
+
+### 6.3 Derived logic (single source of truth, Java side)
+
+```java
+// TaskService — computed per request, never stored
+DueState dueState(Task t, LocalDate today) {
+    if (t.status == DONE || t.dueDate == null) return NEUTRAL;
+    long days = DAYS.between(today, t.dueDate);
+    if (days < 0) return OVERDUE;
+    if (days == 0) return WARNING;   // "inside the next 24 h"
+    return SAFE;                     // 1..n days; the 24–48 h gap folds here
+}
 ```
 
-Both expose `listTasks / createTask / updateTask / deleteTask / getAnchors / setAnchor / getSettings / setSettings`.
-The HTTP store writes every successful response through to `localStorage`; on network failure it
-returns the cached snapshot and sets an `offline` flag. Consequence: **the whole UI can be built
-against the local store first and switched to Spring Boot with a one-line env change** — and the
-demo survives a dead backend (NFR-2).
+`TaskService.toView()` turns that into a `TaskView` record (title, type, assignee, initials, dueState,
+dueLabel) so the template renders strings and never does date arithmetic.
 
-### 6.3 Derived logic (single source of truth)
-
-```js
-dueState(task)  → 'overdue' | 'warning' | 'safe' | 'neutral'
-    done                → neutral
-    no dueDate          → neutral-less (no tint)
-    daysUntil < 0       → overdue
-    hoursUntil < 24     → warning
-    else                → safe        // 24–48 h gap documented in DESIGN.md
-```
-
-`serializeContext(task)` produces the M10 Markdown block:
+`TaskService.serializeContext(task)` will produce the M10 Markdown block:
 
 ```markdown
 ## Task
@@ -185,55 +177,55 @@ ID-101 · Implement User Authentication · feature · To Do · assigned to Liam 
 
 ---
 
-## 7. Design tokens (CSS variables → Tailwind)
+## 7. Design tokens (CSS variables)
 
 | Token | Role | User-editable |
 |---|---|---|
-| `brand-primary` | header, primary button, focus ring | no |
-| `brand-accent` | wordmark dot, copy affordance, links | no |
-| `surface-page`, `surface-card` | backgrounds | no |
-| `ink-primary`, `ink-muted` | body, captions | no |
-| `line-hairline` | 1 px borders | no |
-| `type-feature`, `type-bug` | card accent stripe + icon | **yes** |
-| `due-safe`, `due-warning`, `due-overdue`, `due-neutral` | card tint | **yes** |
-
-Implementation, decided once so M6 and M8 never need a rewrite:
+| `--c-brand-primary` | header, primary button, focus ring | no |
+| `--c-brand-accent` | wordmark dot, links | no |
+| `--c-surface-page`, `--c-surface-card`, `--c-surface-sunken` | backgrounds | no |
+| `--c-ink-primary`, `--c-ink-muted` | body, captions | no |
+| `--c-line-hairline` | 1 px borders | no |
+| `--c-type-feature`, `--c-type-bug` | card stripe + chip | **yes** |
+| `--c-due-safe`, `--c-due-warning`, `--c-due-overdue`, `--c-due-neutral` | card tint + due label | **yes** |
 
 ```css
-/* src/index.css */
-:root { --c-type-bug: 220 38 38; }        /* space-separated RGB */
+/* app.css — defaults, once */
+:root { --c-type-bug: #DC2626; }
 ```
 
-```js
-// tailwind.config.js
-const token = (name) => `rgb(var(--c-${name}) / <alpha-value>)`;
+```html
+<!-- index.html — the user's values, inline, before the stylesheet paints -->
+<style th:utext="${themeCss}"></style>
 ```
 
-`src/theme.js` owns the defaults, validation, `applyTheme()`, and the contrast helpers. A settings change
-sets one property on `document.documentElement`; every Tailwind utility (`bg-type-bug`, `border-due-warning/30`)
-follows, and the `/opacity` modifiers keep working because of `<alpha-value>`.
+`SettingsService.themeCss()` builds that block from the database row; `SettingsService.rows()` supplies the
+editor's labels and the contrast note. Because the override arrives in the HTML head, there is no flash of
+default colours and no client-side theme store. Tints use `color-mix(in srgb, var(--c-due-warning) 8%, #fff)`,
+so any user-chosen colour produces a readable surface without pre-computing RGBA values.
 
 ---
 
-## 8. Backend module layout
+## 8. Module layout (as built)
 
 ```
-backend/
-├── pom.xml                                  spring-boot-starter-web, -data-jpa, -validation, h2
-└── src/main/
-    ├── java/de/uxd/vibetracker/
-    │   ├── VibetrackerApplication.java
-    │   ├── config/WebConfig.java            CORS allowlist
-    │   ├── task/  Task, TaskType, TaskStatus, TaskRepository, TaskService,
-    │   │          TaskController, TaskDto, TaskMapper, TaskNotFoundException
-    │   ├── anchor/ AnchorKey, AnchorSlot, AnchorRepository, AnchorController
-    │   └── seed/   DemoData.java            CommandLineRunner: 4 tasks + 4 anchor slots
-    └── resources/application.yml            port 8080, H2 file db, ddl-auto=update
+pom.xml                                      web, thymeleaf, data-jpa, validation, h2, devtools
+src/main/java/de/uxd/vibetracker/
+├── VibeTrackerApplication.java
+├── task/    Task · TaskType · TaskStatus · DueState · TaskRepository
+│            TaskService · TaskView · ColumnView
+├── settings/ Settings · SettingsRepository · SettingsService · SettingsForm · ColorRow
+├── web/     BoardController (GET /) · SettingsController (POST /settings, /settings/reset)
+└── seed/    SeedData — 6 demo tasks, dates relative to today
+src/main/resources/
+├── application.yml                          port 8080, H2 file db, ddl-auto=update
+├── templates/index.html                     the whole page, one template
+└── static/css/app.css · static/js/app.js    ~600 lines CSS, ~100 lines JS
 ```
 
-Notes for Java 25: use Spring Boot 3.5.x, skip Lombok (annotation processing on the newest JDK is
-pure friction — write the getters or use a `record` for DTOs), and set
-`spring.jpa.hibernate.ddl-auto=update` so a fresh clone needs no migration.
+Notes for Java 25: Spring Boot 3.5.x, no Lombok (annotation processing on a brand-new JDK is pure friction),
+`ddl-auto=update` so a fresh clone needs no migration, and `context`/`description` are stored as plain
+strings rather than a JSON blob because nothing needs to query inside them.
 
 ---
 
@@ -245,12 +237,12 @@ pure friction — write the getters or use a `record` for DTOs), and set
 | Persistence survives a cleared browser, unlike localStorage (NFR-1) | Free Java hosting is weak: Vercel cannot run a JAR; Render free tier sleeps → 30–60 s cold start |
 | "Full-stack" credibility in the grading; FR-2 says the task model is the contract | More moving parts to break on stage; JSON date/enum mismatches cost debugging time |
 
-**Verdict: yes, use Spring Boot — but never as a single point of failure.** Order of work:
-build and green the UI against the local store, *then* switch `VITE_DATA_SOURCE=api`. If the backend
-misbehaves at minute 150, the flip back is one env line, not a rewrite.
+**Verdict: Spring Boot, server-rendered, one process.** The cost that mattered was not the backend but the
+second runtime: a SPA would have meant two builds, an API contract, CORS, and a client copy of the state.
+Thymeleaf removes all four, and the colour picker still works because the theme is a CSS variable either way.
 
-Deployment recommendation: keep the API on the laptop for the live demo (predictable latency),
-push a Render deployment only if there is spare time; pre-warm it 5 minutes before the pitch.
+Deployment: the JAR on the laptop is the demo. A public deployment is optional and, if attempted, must be
+warmed a few minutes before the pitch.
 
 ---
 
@@ -258,20 +250,19 @@ push a Render deployment only if there is spare time; pre-warm it 5 minutes befo
 
 | Slot | Work | Exit criterion |
 |---|---|---|
-| 0:00–0:25 | PRD §8/§9/§11 + DESIGN.md §1–5 + tokens into `tailwind.config.js` | no `<TODO>` left; M2/M3 taggable |
-| 0:25–0:55 | Backend scaffold: entity, repository, controller, seeder, CORS | `curl /api/tasks` returns the 4 seeds |
-| 0:55–1:35 | FR-1..FR-8: board + modal + CRUD against the local store, then API | create/edit/delete survives reload |
-| 1:35–2:05 | FR-9..FR-11: type styling, owner + handoff, due tint | four due states visibly distinct |
-| 2:05–2:25 | FR-12/FR-13: context field + Copy Context Markdown | paste into a text editor reads cleanly |
-| 2:25–2:40 | FR-14: deliverable banner | four slots persist |
-| 2:40–2:55 | FR-15/FR-16: differentiator + demo dataset | curated board, rehearsed talk track |
-| 2:55–3:00 | Deploy, smoke test, buffer | reachable URL, no console errors |
+| done | PRD v2 + DESIGN v2 + tokens | no placeholder markers left |
+| done | Spring Boot scaffold: entities, services, controllers, seeder, H2 | `mvn package` runs, board renders 6 seeds |
+| done | FR-1/2/3/9/11/17: four columns, cards, type colour, due tint, colour drawer | board + live recolour verified by screenshot |
+| next | FR-4..FR-7 (M5): add / edit / delete via a modal, form POST + redirect | create, edit, delete survive a reload |
+| next | FR-10 (M7): assignee + reassign | badge on card, toast on reassign |
+| later | FR-12/13 (M9/M10): context field + Copy Context Markdown | pasted block reads cleanly in an AI chat |
+| later | FR-14/15/16 (M11–M13): anchors, differentiator, demo data | rehearsed 5-minute talk track |
 
 ---
 
 ## 11. Open questions
 
-1. Team name + tagline + the three teammate names (needed for `TEAM` and PRD §11).
-2. Brand palette — or accept a default and adjust in DESIGN.md.
-3. FR-15 differentiator: drag-and-drop, sounds, collapsible columns, or something else?
-4. Hosting: laptop-only demo, or a public Render deployment?
+1. ~~Team name + tagline + teammate names~~ — settled: solo, VibeTracker, `TEAM = [Yifan, AI]`.
+2. ~~Palette~~ — settled in DESIGN.md §2, and now user-editable anyway.
+3. FR-15 differentiator: collapsible columns, drag-to-move, or something else?
+4. Does the "+ Task" button open a centred modal or a full-page form? Modal matches M5's wording.

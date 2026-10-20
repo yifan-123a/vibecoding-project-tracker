@@ -30,9 +30,10 @@ Anti-references — what we are explicitly **not** trying to look like:
 
 ## 2. Color palette
 
-These are the **default** colors. They are declared once as CSS custom properties in `src/index.css`
-(`--c-<token>`) and mapped into Tailwind in `tailwind.config.js`, so components consume classes such as
-`bg-surface-card` or `border-due-warning/30`. **No hex literals outside `theme.js`.**
+These are the **default** colors. They are declared once as CSS custom properties at the top of
+`src/main/resources/static/css/app.css`; the six state colours are re-declared inline on every request from
+the `Settings` row, so the user's choice wins without a rebuild. Markup carries meaning (`class="card is-overdue"`),
+never a colour — **no hex literal below the `:root` block.**
 
 Rule of use: the four *state* colours (type + due) are the only saturated things on screen. Everything else
 is slate. If a screen has more than three saturated elements, it is wrong.
@@ -93,8 +94,8 @@ semantic states from a settings panel:
 | Body | **Inter**, 400 | Same family — hierarchy comes from size and weight, not from a second typeface. |
 | Monospace (IDs, tags, the copied Markdown preview) | **JetBrains Mono**, 400 | Distinguishes machine-readable text from prose at a glance; also what the copied block will look like. |
 
-Loaded from Google Fonts in `index.html` with `display=swap`; if the network blocks it, the stack falls back
-to `system-ui` / `ui-monospace` and nothing breaks (NFR-2 applies to fonts too).
+Loaded from Google Fonts in the Thymeleaf `<head>` with `display=swap`; if the network blocks it, the stack
+falls back to `system-ui` / `ui-monospace` and nothing breaks (NFR-2 applies to fonts too).
 
 Sizes (do not invent new ones):
 

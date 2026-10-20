@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>VibeTracker — track the task, keep the context</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
+          rel="stylesheet">
+
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+    <!-- User-chosen colours, injected before first paint: no flash of defaults. -->
+    <style th:utext="${themeCss}"></style>
+</head>
+<body>
+
+<header class="topbar">
+    <div class="brand">
+        <span class="wordmark">Vibe<strong>Tracker</strong><span class="dot">.</span></span>
+        <span class="tagline">Track the task, keep the context.</span>
+    </div>
+
+    <div class="topbar-actions">
+        <button type="button" class="btn btn-ghost" data-open-settings aria-haspopup="dialog">
+            Colours
+        </button>
+        <button type="button" class="btn btn-primary" disabled
+                title="Add task — arrives with the modal milestone">
+            + Task
+        </button>
+    </div>
+</header>
+
+<main class="board" aria-label="Kanban board">
+    <section class="column" th:each="col : ${columns}" th:attr="data-status=${col.id}">
+        <header class="column-head">
+            <h2 th:text="${col.label}">To Do</h2>
+            <span class="count" th:text="${col.count}">0</span>
+        </header>
+
+        <div class="cards">
+            <p class="empty" th:if="${col.empty}">Nothing here yet — keep going.</p>
+
+            <article class="card"
+                     th:each="card : ${col.tasks}"
+                     th:classappend="${'type-' + #strings.toLowerCase(card.type.name()) + ' is-' + card.dueState.cssClass}">
+                <div class="card-meta">
+                    <span class="chip" th:text="${card.type.label}">Feature</span>
+                    <span class="due" th:text="${card.dueLabel}">Due in 3 days</span>
+                </div>
+
+                <h3 class="card-title" th:text="${card.title}">Task title</h3>
+
+                <p class="card-desc" th:if="${card.description != null}" th:text="${card.description}">
+                    Description
+                </p>
+
+                <footer class="card-foot">
+                    <span class="avatar" th:text="${card.initials}" th:attr="title=${card.assignee}">Y</span>
+                    <span class="assignee" th:text="${card.assignee}">Yifan</span>
+                </footer>
+            </article>
+        </div>
+    </section>
+</main>
+
+<div class="scrim" data-scrim hidden></div>
+
+<aside class="drawer" data-drawer role="dialog" aria-modal="true" aria-labelledby="drawer-title" aria-hidden="true">
+    <header class="drawer-head">
+        <div>
+            <h2 id="drawer-title">Your colours</h2>
+            <p class="drawer-sub">The board behind this panel is the preview.</p>
+        </div>
+        <button type="button" class="icon-btn" data-close-settings aria-label="Close settings">&#10005;</button>
+    </header>
+
+    <form th:action="@{/settings}" method="post" class="drawer-body" data-theme-form>
+        <div class="color-row" th:each="row : ${colorRows}">
+            <div class="color-row-head">
+                <label th:for="${'color-' + row.field}" th:text="${row.label}">Feature tasks</label>
+                <span class="hint" th:text="${row.hint}">Stripe and chip</span>
+            </div>
+            <div class="color-row-inputs">
+                <input type="color" class="swatch"
+                       th:id="${'color-' + row.field}"
+                       th:value="${row.hex}"
+                       th:attr="data-css-var=${row.cssVar}">
+                <input type="text" class="hex" maxlength="7" spellcheck="false" autocomplete="off"
+                       th:name="${row.field}"
+                       th:value="${row.hex}"
+                       th:attr="data-css-var=${row.cssVar}">
+                <span class="note" th:if="${!#strings.isEmpty(row.note)}"
+                      th:classappend="${row.level}" th:text="${row.note}">Low contrast</span>
+            </div>
+        </div>
+
+        <footer class="drawer-foot">
+            <button type="submit" class="btn btn-primary">Save</button>
+            <button type="submit" class="btn btn-ghost" formaction="/settings/reset" formnovalidate>
+                Reset to defaults
+            </button>
+        </footer>
+    </form>
+</aside>
+
+<div class="toast" data-toast th:if="${toast}" th:text="${toast}">Colours saved.</div>
+
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>

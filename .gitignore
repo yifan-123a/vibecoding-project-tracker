@@ -1,9 +1,21 @@
-node_modules
-dist
+# Build output
+target/
+dist/
+
+# Local database (H2 file) — demo data is seeded, never committed
+data/
+
+# Node leftovers from the abandoned Vite scaffold
+node_modules/
+.npm-cache/
+
+# Environment
 .env
 .env.local
 .env.*.local
-.DS_Store
+
+# Tooling
 .idea
 .vscode
+.DS_Store
 *.log
