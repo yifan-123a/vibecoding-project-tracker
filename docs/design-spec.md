@@ -126,9 +126,11 @@ render in one pass.
       .card-meta                 chip (type) · due label
       .card-title
       .card-desc                 (2-line clamp)
-      .card-foot                 avatar · assignee
+      .card-foot                 avatar · assignee · "Hand off" disclosure
+<footer class="legend">       4 colour-key dots: 2+ days / 24 h / past due / done
 <aside class="drawer">        6 × .color-row (label · hint · swatch · hex · note) · Save · Reset
-<div class="toast">           flash message after save/reset
+<div class="modal-layer">     ?create / ?edit={id} → the task form
+<div class="toast">           flash message after save, reset, delete, hand-off
 ```
 
 The card's state lives in its class list — `card type-bug is-overdue` — and the CSS resolves the colour.

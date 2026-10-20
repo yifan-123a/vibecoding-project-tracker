@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -28,13 +29,13 @@ public class TaskService {
     }
 
     /** Four columns in the canonical order, empty ones included. */
-    public List<ColumnView> board(LocalDate today) {
+    public List<ColumnView> board(LocalDateTime now) {
         Map<TaskStatus, List<TaskView>> grouped = new EnumMap<>(TaskStatus.class);
         for (TaskStatus status : TaskStatus.values()) {
             grouped.put(status, new ArrayList<>());
         }
         for (Task task : repository.findAll()) {
-            grouped.get(task.getStatus()).add(toView(task, today));
+            grouped.get(task.getStatus()).add(toView(task, now));
         }
 
         List<ColumnView> columns = new ArrayList<>(TaskStatus.values().length);
@@ -108,7 +109,7 @@ public class TaskService {
         });
     }
 
-    TaskView toView(Task task, LocalDate today) {
+    TaskView toView(Task task, LocalDateTime now) {
         return new TaskView(
                 task.getId(),
                 task.getTitle(),
@@ -117,19 +118,25 @@ public class TaskService {
                 task.getStatus(),
                 task.getAssignee(),
                 task.initials(),
-                dueState(task, today),
-                dueLabel(task, today));
+                dueState(task, now),
+                dueLabel(task, now.toLocalDate()));
     }
 
-    static DueState dueState(Task task, LocalDate today) {
+    /**
+     * The milestone says "less than 24 hours", so the window is measured from
+     * the end of the due day, not from midnight. A task due today turns amber
+     * as soon as it is inside that window; everything else stays calm.
+     */
+    static DueState dueState(Task task, LocalDateTime now) {
         if (task.getStatus() == TaskStatus.DONE || task.getDueDate() == null) {
             return DueState.NEUTRAL;
         }
-        long days = ChronoUnit.DAYS.between(today, task.getDueDate());
-        if (days < 0) {
+        LocalDateTime endOfDueDay = task.getDueDate().plusDays(1).atStartOfDay();
+        long hours = ChronoUnit.HOURS.between(now, endOfDueDay);
+        if (hours < 0) {
             return DueState.OVERDUE;
         }
-        if (days == 0) {
+        if (hours <= 24) {
             return DueState.WARNING;
         }
         return DueState.SAFE;

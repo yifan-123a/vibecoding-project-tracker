@@ -49,9 +49,9 @@ git push
 | 3 | `design-done` | DESIGN.md filled in, tokens defined | done |
 | 4 | `data-model` | Four-column board renders with demo tasks | done |
 | 5 | `crud-modal` | Add / edit / delete via a modal, persisted | done |
-| 6 | `tag-style` | Feature vs. bug visual distinction | done |
-| 7 | `task-owner` | Assignee badge + reassign | done (reassign via the modal) |
-| 8 | `due-tint` | Cards tint by deadline | done |
+| 6 | `tag-style` | Feature vs. bug visual distinction | done (colour + icon) |
+| 7 | `task-owner` | Assignee badge + reassign | done (badge + "Hand off" on the card) |
+| 8 | `due-tint` | Cards tint by deadline | done (+ colour key under the board) |
 | 9 | `context` | Context field on the task modal | next |
 | 10 | `copy-prompt` | One-click copy of the Markdown briefing | next |
 | 11 | `project-deliverables` | Deliverable anchor banner | later |

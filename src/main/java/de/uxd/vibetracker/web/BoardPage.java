@@ -8,7 +8,7 @@ import de.uxd.vibetracker.task.TaskType;
 import org.springframework.stereotype.Component;
 import org.springframework.ui.Model;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -30,14 +30,14 @@ public class BoardPage {
     }
 
     public void populate(Model model) {
-        LocalDate today = LocalDate.now();
+        LocalDateTime now = LocalDateTime.now();
         Settings settings = settingsService.current();
 
-        model.addAttribute("columns", taskService.board(today));
+        model.addAttribute("columns", taskService.board(now));
         model.addAttribute("settings", settings);
         model.addAttribute("colorRows", settingsService.rows(settings));
         model.addAttribute("themeCss", settingsService.themeCss(settings));
-        model.addAttribute("today", today);
+        model.addAttribute("today", now.toLocalDate());
         model.addAttribute("team", TEAM);
         model.addAttribute("types", TaskType.values());
         model.addAttribute("statuses", TaskStatus.values());
