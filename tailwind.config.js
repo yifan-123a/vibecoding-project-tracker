@@ -1,29 +1,33 @@
 /** @type {import('tailwindcss').Config} */
+
+// Every colour is a CSS variable (see src/index.css), so the palette can be
+// re-bound at runtime without rebuilding Tailwind. `<alpha-value>` keeps the
+// `/10`, `/30` opacity modifiers working: bg-due-warning/10 etc.
+const token = (name) => `rgb(var(--c-${name}) / <alpha-value>)`;
+
 export default {
   content: ['./index.html', './src/**/*.{js,jsx}'],
   theme: {
     extend: {
-      // Every colour in the app comes from here — see DESIGN.md §2.
-      // No hex literals inside components.
       colors: {
         // Brand
-        'brand-primary': '#1D4ED8',
-        'brand-accent': '#F59E0B',
-        'surface-page': '#F8FAFC',
-        'surface-card': '#FFFFFF',
-        'ink-primary': '#0F172A',
-        'ink-muted': '#64748B',
-        'line-hairline': '#E2E8F0',
+        'brand-primary': token('brand-primary'),
+        'brand-accent': token('brand-accent'),
+        'surface-page': token('surface-page'),
+        'surface-card': token('surface-card'),
+        'ink-primary': token('ink-primary'),
+        'ink-muted': token('ink-muted'),
+        'line-hairline': token('line-hairline'),
 
-        // Task type — M6 tag-style
-        'type-feature': '#10B981',
-        'type-bug': '#DC2626',
+        // Task type — M6 tag-style (user-editable)
+        'type-feature': token('type-feature'),
+        'type-bug': token('type-bug'),
 
-        // Due-date states — M8 due-tint (use with /10 background, /30 border)
-        'due-safe': '#64748B',
-        'due-warning': '#F59E0B',
-        'due-overdue': '#DC2626',
-        'due-neutral': '#94A3B8',
+        // Due-date states — M8 due-tint (user-editable)
+        'due-safe': token('due-safe'),
+        'due-warning': token('due-warning'),
+        'due-overdue': token('due-overdue'),
+        'due-neutral': token('due-neutral'),
       },
       fontFamily: {
         sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],

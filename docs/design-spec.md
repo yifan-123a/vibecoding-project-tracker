@@ -35,6 +35,7 @@ can pick a card up and continue without re-deriving everything. The hero interac
 | FR-14 | Four deliverable slots (Presentation, Demo, Report, Documentation) pinned above the board, each with a URL field and an empty/filled indicator, persisted. | M11 | Should |
 | FR-15 | One self-chosen differentiator that is visible in the demo and breaks nothing else. | M12 | Should |
 | FR-16 | A curated demo dataset and a rehearsed 5-minute pitch. | M13 | Must |
+| FR-17 | The user recolours the six semantic states (feature, bug, due ×4) from a settings panel; the choice persists and can be reset. | mid-hack added | Should |
 
 **Out of scope** (deliberately): auth, real GitHub integration, mobile layout, multi-team, real-time collaboration.
 
@@ -54,6 +55,7 @@ can pick a card up and continue without re-deriving everything. The hero interac
 | NFR-8 | **Deployability** | Frontend: Vercel static build. Backend: single executable JAR with an embedded DB; API base URL injected at build time via `VITE_API_URL`. |
 | NFR-9 | **Time budget** | Everything above reachable in ~3 h by 1–2 people. Anything that cannot be cut in 5 minutes is a risk and needs a fallback (see §9). |
 | NFR-10 | **Desktop-first layout** | Optimised for 1280–1920 px; degrades without breaking at 1024 px. |
+| NFR-11 | **User-chosen colours stay readable** | Every editable colour is measured against white; < 4.5:1 warns, < 3:1 warns harder, none are blocked. Text on solid fills picks its own ink (`readableInk`). Colour is never a hard-coded literal in a component. |
 
 ---
 
@@ -111,6 +113,8 @@ Deployed: `VITE_API_URL` points at the hosted API; CORS allowlist holds the Verc
 | DELETE | `/api/tasks/{id}` | – | `204` |
 | GET | `/api/anchors` | – | `200 [AnchorDTO]` (always 4 rows) |
 | PUT | `/api/anchors/{key}` | `{ "url": "…" }` | `200 AnchorDTO` |
+| GET | `/api/settings` | – | `200 { colors: { token: "#RRGGBB" }, updatedAt }` |
+| PUT | `/api/settings` | `{ colors: { … } }` | `200` · `400` on a malformed hex |
 | GET | `/api/health` | – | `200 {"status":"UP"}` |
 
 `TaskDTO` mirrors the entity with `dueDate` as `"YYYY-MM-DD"` and `contextUpdatedAt` as ISO-8601.
@@ -134,6 +138,7 @@ App
 │   ├── fields: title, description, type, status, assignee, dueDate
 │   ├── ContextSection  textarea · AI-tool select · "updated 2 h ago"
 │   └── footer: Copy Context · Delete (confirm) · Cancel · Save
+├── SettingsDrawer    6 × ColorRow (label · swatch · hex · contrast note) · Reset   FR-17
 └── ToastStack        copy / handoff / error feedback
 ```
 
@@ -148,7 +153,7 @@ export const store = import.meta.env.VITE_DATA_SOURCE === 'api'
   : createLocalStore();                             // localStorage only
 ```
 
-Both expose `listTasks / createTask / updateTask / deleteTask / getAnchors / setAnchor`.
+Both expose `listTasks / createTask / updateTask / deleteTask / getAnchors / setAnchor / getSettings / setSettings`.
 The HTTP store writes every successful response through to `localStorage`; on network failure it
 returns the cached snapshot and sets an `offline` flag. Consequence: **the whole UI can be built
 against the local store first and switched to Spring Boot with a one-line env change** — and the
@@ -180,18 +185,33 @@ ID-101 · Implement User Authentication · feature · To Do · assigned to Liam 
 
 ---
 
-## 7. Design tokens (to be pasted into `tailwind.config.js`)
+## 7. Design tokens (CSS variables → Tailwind)
 
-| Token | Role |
-|---|---|
-| `brand-primary` | header, primary button, focus ring |
-| `brand-accent` | links, hover |
-| `surface-page`, `surface-card` | backgrounds |
-| `text-primary`, `text-muted` | body, captions |
-| `type-feature`, `type-bug` | card accent stripe + icon |
-| `due-safe`, `due-warning`, `due-overdue`, `due-neutral` | card tint |
+| Token | Role | User-editable |
+|---|---|---|
+| `brand-primary` | header, primary button, focus ring | no |
+| `brand-accent` | wordmark dot, copy affordance, links | no |
+| `surface-page`, `surface-card` | backgrounds | no |
+| `ink-primary`, `ink-muted` | body, captions | no |
+| `line-hairline` | 1 px borders | no |
+| `type-feature`, `type-bug` | card accent stripe + icon | **yes** |
+| `due-safe`, `due-warning`, `due-overdue`, `due-neutral` | card tint | **yes** |
 
-Values are chosen in DESIGN.md §2 and referenced by name only — no hex literals in components (NFR-5).
+Implementation, decided once so M6 and M8 never need a rewrite:
+
+```css
+/* src/index.css */
+:root { --c-type-bug: 220 38 38; }        /* space-separated RGB */
+```
+
+```js
+// tailwind.config.js
+const token = (name) => `rgb(var(--c-${name}) / <alpha-value>)`;
+```
+
+`src/theme.js` owns the defaults, validation, `applyTheme()`, and the contrast helpers. A settings change
+sets one property on `document.documentElement`; every Tailwind utility (`bg-type-bug`, `border-due-warning/30`)
+follows, and the `/opacity` modifiers keep working because of `<alpha-value>`.
 
 ---
 

@@ -30,8 +30,9 @@ Anti-references — what we are explicitly **not** trying to look like:
 
 ## 2. Color palette
 
-These are the only colors allowed. They are declared once in `tailwind.config.js`; components consume Tailwind
-classes such as `bg-surface-card` or `border-due-warning`. **No hex literals outside the config.**
+These are the **default** colors. They are declared once as CSS custom properties in `src/index.css`
+(`--c-<token>`) and mapped into Tailwind in `tailwind.config.js`, so components consume classes such as
+`bg-surface-card` or `border-due-warning/30`. **No hex literals outside `theme.js`.**
 
 Rule of use: the four *state* colours (type + due) are the only saturated things on screen. Everything else
 is slate. If a screen has more than three saturated elements, it is wrong.
@@ -69,6 +70,21 @@ stays readable at card size.
 Known gap inherited from the milestone spec: the 24–48 h window is not defined. Decision: fold it into
 `due-safe`; revisit only if a real task ever feels mis-signalled there.
 
+### Who owns these colours? The user. (M8b)
+
+The table above is a **starting point, not a constraint.** Anyone using the tracker can recolour the six
+semantic states from a settings panel:
+
+- **Editable:** `type-feature`, `type-bug`, `due-safe`, `due-warning`, `due-overdue`, `due-neutral`.
+- **Fixed:** surfaces, ink, and the brand pair. Structural colours are not a preference — letting someone
+  break the contrast of the whole page is a bug, not a feature.
+- **How:** a swatch + hex field per token, applied live to the document root, persisted in `Settings` and
+  mirrored to localStorage so a reload (or a dead API) keeps the choice.
+- **Guardrail:** every candidate colour is measured against white. Below 4.5:1 it gets a warning; below
+  3:1 it gets a stronger one. It is never blocked — but anything drawn *on* a solid fill picks its own
+  text colour (`readableInk()`), so a pale "bug" orange still produces a legible chip.
+- **Reset:** one control restores `theme.js` defaults. There is no "save" button — the board is the preview.
+
 ## 3. Typography
 
 | Role | Font | Why |
@@ -104,6 +120,9 @@ One sentence per element; these are the rules the build phase is checked against
   only if it can be done without breaking the board.
 - **Toasts:** bottom-centre, `ink-primary` background, white text, 200 ms fade, auto-dismiss at 2.5 s, one at a
   time.
+- **Settings panel:** right-hand drawer, 320 px, one row per state (`label` · swatch · hex field · contrast
+  note), no save button — the board behind it is the preview; `Reset to defaults` sits at the bottom in the
+  outline style.
 
 ## 5. Voice / microcopy
 

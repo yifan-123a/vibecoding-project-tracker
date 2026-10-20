@@ -51,6 +51,8 @@ can click one button and copy the task plus its briefing back into a chat to con
 4. When stuck, click **Copy Context** on a task and paste it into Claude / ChatGPT / Cursor to continue.
 5. Reassign a task to `AI` or back to yourself — the solo version of "hand off to a teammate".
 6. Drop deliverable links into the Anchor Board as they are produced.
+7. Open **Settings** and recolour the six state colours (feature, bug, and the four due states) to
+   whatever reads best — the board repaints immediately, no reload.
 
 ## 5. Data model
 
@@ -81,11 +83,26 @@ Anchor = {
   url: string | null,            // the link pasted in; blank counts as empty
   updatedAt: string,             // ISO timestamp
 }
+
+// User-chosen colours for the six semantic states. One row, never deleted.
+// The values here are DEFAULTS; a missing token falls back to them.
+Settings = {
+  colors: {
+    'type-feature': '#RRGGBB',   // M6
+    'type-bug':     '#RRGGBB',   // M6
+    'due-safe':     '#RRGGBB',   // M8
+    'due-warning':  '#RRGGBB',   // M8
+    'due-overdue':  '#RRGGBB',   // M8
+    'due-neutral':  '#RRGGBB',   // M8
+  },
+  updatedAt: string,
+}
 ```
 
 Wire format is JSON with camelCase keys; dates are `YYYY-MM-DD` strings, timestamps are ISO-8601.
 Invariants: a task with `status = 'done'` always renders due-neutral regardless of `dueDate`; a whitespace
-`url` is treated as empty, not filled.
+`url` is treated as empty, not filled; a colour is accepted only in `#RRGGBB` form (3-digit shorthand is
+expanded, anything else is rejected and the default stays).
 
 ## 6. Tech stack
 
@@ -93,6 +110,7 @@ Invariants: a task with `status = 'done'` always renders due-neutral regardless 
 |---|---|---|
 | UI | React 18 + Vite | What the scaffold ships with. Don't migrate. |
 | Styling | Tailwind, tokens in `tailwind.config.js` | Already configured. Utility classes only, no separate CSS files. |
+| Theming | CSS custom properties (`--c-<token>`) + Tailwind `rgb(var(--c-token) / <alpha-value>)` | The user changes state colours at runtime; a variable swap repaints instantly, with no rebuild and no class juggling. |
 | State | `useState` + custom hooks | One `useTasks` hook owns the collection; no Redux for this size. |
 | Data access | A single `store` module with two implementations (`local`, `http`) | Components never call `fetch`. One env var switches backends. |
 | API | **Spring Boot 3.5**, Java 25, Spring Web + Data JPA + Validation | Real persistence, real CRUD contract, and it doubles as the M5 data model. |
@@ -138,9 +156,10 @@ layer that makes it feel finished, P2 is only if the clock is generous.
 | 3 | `design-done` | DESIGN.md + tokens in `tailwind.config.js` | P0 | palette and type in the config, no hex literals in components |
 | 4 | `data-model` | Task entity + four-column board | P0 | board renders 4 seeded tasks from `/api/tasks` |
 | 5 | `crud-modal` | Add / edit / delete modal | P0 | create, edit, delete all survive a reload |
-| 6 | `tag-style` | Feature / bug distinction | P1 | color + icon everywhere a task renders |
+| 6 | `tag-style` | Feature / bug distinction | P1 | color + icon everywhere a task renders, using the user's chosen colours |
 | 7 | `task-owner` | Assignee badge + reassign | P1 | badge on card, reassignment acknowledged with a toast |
-| 8 | `due-tint` | Due-date tinting | P1 | four states visibly distinct, updates without user action |
+| 8 | `due-tint` | Due-date tinting | P1 | four states visibly distinct, updates without user action, using the user's chosen colours |
+| 8b | — | **Settings panel: user-chosen state colours** | P1 | six swatches edit live, reset restores defaults, low-contrast choices are warned about, choice survives reload |
 | 9 | `context` | Context field on the modal | P0 | textarea + AI-tool select + "updated N ago", persisted |
 | 10 | `copy-prompt` | Copy Context button | P0 | Markdown block pastes cleanly into an AI chat |
 | 11 | `project-deliverables` | Deliverable anchor banner | P2 | four slots accept a URL and survive reload |
@@ -150,6 +169,11 @@ layer that makes it feel finished, P2 is only if the clock is generous.
 **Dependency chain.** M2 + M3 are documents — do them first because M6 and M8 consume the colors and M4
 consumes the names from §8. M4 unblocks everything in M5–M8. M9 must land before M10 (Copy Context has
 nothing to copy otherwise). M11 and M12 are the first things to cut when the clock runs out.
+
+**Colour is a user preference, not a brand decision.** M6 and M8 must be built against the CSS-variable
+tokens (`src/theme.js`, `--c-<token>` in `src/index.css`), never against hex literals — otherwise 8b means
+rewriting both of them. Defaults live in DESIGN.md §2; the user's choice wins and is persisted in
+`Settings`.
 
 ## 10. AI / vibe coding angle
 
