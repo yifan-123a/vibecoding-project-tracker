@@ -55,7 +55,7 @@ git push
 | 9 | `context` | Context field on the task modal | done (textarea + AI tool + "updated N ago") |
 | 10 | `copy-prompt` | One-click copy of the Markdown briefing | done (card button + modal button) |
 | 11 | `project-deliverables` | Deliverable anchor banner | done (4 slots, validation, Open link) |
-| 12 | `secret-sauce` | The one thing that makes it yours | later |
+| 12 | `secret-sauce` | The one thing that makes it yours | done (drag cards between columns) |
 | 13 | `pitch-ready` | Demo dataset + rehearsed pitch | later |
 
 ### Extras beyond the brief

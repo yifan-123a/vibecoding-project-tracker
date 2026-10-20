@@ -148,6 +148,87 @@
         }
     }
 
+    /* -------------------------------------------------- drag between columns (M12) */
+    // The modal's status dropdown stays the accessible path; this is a second
+    // entry point, not a replacement. Drop → POST → reload, so derived state
+    // (tints, counts, empty columns) can never drift from the database.
+
+    const dragCards = document.querySelectorAll('.card[data-task-id]');
+    const dropColumns = document.querySelectorAll('.column[data-status]');
+
+    if (dragCards.length && dropColumns.length) {
+        let draggedId = null;
+
+        dragCards.forEach(function (card) {
+            card.addEventListener('dragstart', function (event) {
+                draggedId = card.dataset.taskId;
+                event.dataTransfer.setData('text/plain', draggedId);
+                event.dataTransfer.effectAllowed = 'move';
+                card.classList.add('is-dragging');
+            });
+
+            card.addEventListener('dragend', function () {
+                card.classList.remove('is-dragging');
+                dropColumns.forEach(function (column) {
+                    column.classList.remove('is-drop-target');
+                });
+            });
+        });
+
+        dropColumns.forEach(function (column) {
+            column.addEventListener('dragover', function (event) {
+                event.preventDefault();
+                event.dataTransfer.dropEffect = 'move';
+                column.classList.add('is-drop-target');
+            });
+
+            column.addEventListener('dragleave', function (event) {
+                if (!column.contains(event.relatedTarget)) {
+                    column.classList.remove('is-drop-target');
+                }
+            });
+
+            column.addEventListener('drop', async function (event) {
+                event.preventDefault();
+                column.classList.remove('is-drop-target');
+
+                const id = event.dataTransfer.getData('text/plain') || draggedId;
+                const status = column.dataset.status;
+                if (!id || !status) {
+                    return;
+                }
+
+                const card = document.querySelector('.card[data-task-id="' + id + '"]');
+                const from = card && card.closest('.column') ? card.closest('.column').dataset.status : null;
+                if (from === status) {
+                    // Dropped back where it started: no request, no reload.
+                    return;
+                }
+
+                // Move the node first so the drop feels immediate, then confirm.
+                const target = column.querySelector('.cards');
+                if (card && target) {
+                    target.appendChild(card);
+                }
+
+                try {
+                    const response = await fetch('/tasks/' + id + '/status', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: 'status=' + encodeURIComponent(status)
+                    });
+                    if (!response.ok) {
+                        throw new Error('HTTP ' + response.status);
+                    }
+                    window.location.reload();
+                } catch (error) {
+                    showToast('Could not move that task — reloading.');
+                    window.location.reload();
+                }
+            });
+        });
+    }
+
     /* ------------------------------------------------------- copy context (M10) */
 
     function showToast(message) {

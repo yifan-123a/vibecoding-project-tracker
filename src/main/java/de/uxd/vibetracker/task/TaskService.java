@@ -119,8 +119,7 @@ public class TaskService {
     }
 
     @Transactional
-    public Optional<Task> update(Long id, TaskForm form) {
-        return repository.findById(id).map(task -> {
+    public Optional<Task> update(Long id, TaskForm form) {        return repository.findById(id).map(task -> {
             String context = trimToNull(form.getContext());
             // Only a real edit to the text bumps the "updated N ago" stamp;
             // saving the form for another field must not make it lie.
@@ -156,6 +155,21 @@ public class TaskService {
         }
         return repository.findById(id).map(task -> {
             task.setAssignee(assignee);
+            return repository.save(task);
+        });
+    }
+
+    /**
+     * Move a task to another column (M12). The modal dropdown calls the same
+     * service method, so drag-and-drop and the accessible path cannot diverge.
+     */
+    @Transactional
+    public Optional<Task> move(Long id, TaskStatus status) {
+        if (status == null) {
+            return Optional.empty();
+        }
+        return repository.findById(id).map(task -> {
+            task.setStatus(status);
             return repository.save(task);
         });
     }

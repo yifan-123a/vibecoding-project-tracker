@@ -3,7 +3,9 @@ package de.uxd.vibetracker.web;
 import de.uxd.vibetracker.task.Task;
 import de.uxd.vibetracker.task.TaskForm;
 import de.uxd.vibetracker.task.TaskService;
+import de.uxd.vibetracker.task.TaskStatus;
 import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -97,6 +99,22 @@ public class TaskController {
                 .map(task -> "Handed off to " + task.getAssignee() + ".")
                 .orElse("That task no longer exists."));
         return "redirect:/";
+    }
+
+    /**
+     * Drag-and-drop target (M12). Returns 204 so the browser can move the card
+     * first and reload after — no redirect, no flash, no page in the payload.
+     */
+    @PostMapping("/{id}/status")
+    @ResponseBody
+    public ResponseEntity<Void> move(@PathVariable Long id, @RequestParam String status) {
+        TaskStatus target = TaskStatus.fromId(status);
+        if (target == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        return taskService.move(id, target)
+                .map(task -> ResponseEntity.noContent().<Void>build())
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     /**

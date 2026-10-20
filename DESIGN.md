@@ -118,8 +118,9 @@ One sentence per element; these are the rules the build phase is checked against
 - **Modal:** centred, max-width 640 px, backdrop `#0F172A` at 50 %, focus trapped, `Esc` closes, focus returns
   to the card that opened it.
 - **Empty states:** dashed 1 px border, `ink-muted` text, one encouraging line, never an illustration.
-- **Drag affordance:** none — status changes through the modal dropdown. Dragging a card is M12 territory, and
-  only if it can be done without breaking the board.
+- **Drag affordance (M12):** dragging a card between columns is a *second* entry point — the modal's status
+  dropdown stays, so keyboard and touch users are never blocked. While dragging, the source card fades to 45 %
+  and the target column takes a dashed brand outline; dropping anywhere else is a no-op.
 - **Toasts:** bottom-centre, `ink-primary` background, white text, 200 ms fade, auto-dismiss at 2.5 s, one at a
   time.
 - **Settings panel:** right-hand drawer, 320 px, one row per state (`label` · swatch · hex field · contrast

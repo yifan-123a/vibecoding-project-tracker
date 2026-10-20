@@ -417,6 +417,26 @@ body {
     box-shadow: var(--shadow-hover);
 }
 
+/* M12: dragging is a second way to change status, never the only one. */
+.card.is-dragging {
+    opacity: 0.45;
+    transform: none;
+}
+
+.card-link {
+    -webkit-user-drag: none;
+}
+
+.column.is-drop-target {
+    background: color-mix(in srgb, var(--c-brand-primary) 5%, var(--c-surface-sunken));
+    outline: 2px dashed color-mix(in srgb, var(--c-brand-primary) 50%, transparent);
+    outline-offset: -4px;
+}
+
+.column.is-drop-target .cards {
+    min-height: 56px;
+}
+
 .type-feature {
     --type: var(--c-type-feature);
 }

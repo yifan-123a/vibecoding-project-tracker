@@ -25,4 +25,20 @@ public enum TaskStatus {
     public String getLabel() {
         return label;
     }
+
+    /**
+     * Resolve the DOM/URL form ("in-progress") back to the enum. Returns null
+     * for anything unknown, so callers can answer 400 instead of 500.
+     */
+    public static TaskStatus fromId(String id) {
+        if (id == null) {
+            return null;
+        }
+        for (TaskStatus status : values()) {
+            if (status.id.equalsIgnoreCase(id.trim())) {
+                return status;
+            }
+        }
+        return null;
+    }
 }
