@@ -254,6 +254,7 @@ body {
 .card {
     --type: var(--c-line-hairline);
 
+    position: relative;
     padding: 10px 12px;
     background: var(--c-surface-card);
     border: 1px solid var(--c-line-hairline);
@@ -365,6 +366,77 @@ body {
     display: flex;
     align-items: center;
     gap: 6px;
+    position: relative;
+}
+
+/* The whole card is a link, but the hand-off control has to stay clickable:
+   an overlay link covers the card, and interactive bits sit above it. */
+.card-link {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    border-radius: var(--radius-card);
+}
+
+.handoff {
+    position: relative;
+    z-index: 2;
+    margin-left: auto;
+}
+
+.handoff summary {
+    list-style: none;
+    padding: 1px 6px;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    font-size: 11px;
+    color: var(--c-ink-muted);
+    cursor: pointer;
+    transition: background-color 150ms var(--ease), color 150ms var(--ease);
+}
+
+.handoff summary::-webkit-details-marker {
+    display: none;
+}
+
+.handoff summary:hover,
+.handoff[open] summary {
+    background: var(--c-surface-sunken);
+    color: var(--c-ink-primary);
+}
+
+.handoff-menu {
+    position: absolute;
+    right: 0;
+    bottom: calc(100% + 6px);
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 112px;
+    padding: 4px;
+    background: var(--c-surface-card);
+    border: 1px solid var(--c-line-hairline);
+    border-radius: var(--radius-control);
+    box-shadow: var(--shadow-hover);
+}
+
+.handoff-menu button {
+    display: block;
+    width: 100%;
+    padding: 6px 8px;
+    border: 0;
+    border-radius: 6px;
+    background: none;
+    font: inherit;
+    font-size: 12px;
+    text-align: left;
+    color: var(--c-ink-primary);
+    cursor: pointer;
+}
+
+.handoff-menu button:hover {
+    background: var(--c-surface-sunken);
 }
 
 .avatar {

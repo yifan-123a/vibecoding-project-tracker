@@ -40,10 +40,12 @@
         <div class="cards">
             <p class="empty" th:if="${col.empty}">Nothing here yet — keep going.</p>
 
-            <a class="card"
-               th:each="card : ${col.tasks}"
-               th:href="@{/(edit=${card.id})}"
-               th:classappend="${'type-' + #strings.toLowerCase(card.type.name()) + ' is-' + card.dueState.cssClass}">
+            <article class="card"
+                     th:each="card : ${col.tasks}"
+                     th:classappend="${'type-' + #strings.toLowerCase(card.type.name()) + ' is-' + card.dueState.cssClass}">
+                <a class="card-link" th:href="@{/(edit=${card.id})}"
+                   th:attr="aria-label=${'Edit ' + card.title}"></a>
+
                 <div class="card-meta">
                     <span class="chip">
                         <svg class="chip-icon" viewBox="0 0 24 24" aria-hidden="true"
@@ -68,8 +70,18 @@
                 <footer class="card-foot">
                     <span class="avatar" th:text="${card.initials}" th:attr="title=${card.assignee}">Y</span>
                     <span class="assignee" th:text="${card.assignee}">Yifan</span>
+
+                    <details class="handoff">
+                        <summary th:attr="aria-label=${'Hand off ' + card.title}">Hand off</summary>
+                        <form class="handoff-menu" th:action="@{/tasks/{id}/assignee(id=${card.id})}"
+                              method="post">
+                            <button type="submit" name="assignee"
+                                    th:each="who : ${team}" th:if="${who != card.assignee}"
+                                    th:value="${who}" th:text="${'→ ' + who}">→ AI</button>
+                        </form>
+                    </details>
                 </footer>
-            </a>
+            </article>
         </div>
     </section>
 </main>

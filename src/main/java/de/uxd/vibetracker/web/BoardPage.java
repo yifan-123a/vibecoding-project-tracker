@@ -19,7 +19,7 @@ import java.util.List;
 public class BoardPage {
 
     /** Sole assignment target plus the AI pseudo-assignee (PRD §8). */
-    public static final List<String> TEAM = List.of("Yifan", "AI");
+    public static final List<String> TEAM = TaskService.ASSIGNEES;
 
     private final TaskService taskService;
     private final SettingsService settingsService;

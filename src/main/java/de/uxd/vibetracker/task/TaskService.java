@@ -15,6 +15,9 @@ import java.util.Optional;
 @Service
 public class TaskService {
 
+    /** The only legal values for {@code Task.assignee} (PRD §8). */
+    public static final List<String> ASSIGNEES = List.of("Yifan", "AI");
+
     private static final Comparator<TaskView> CARD_ORDER =
             Comparator.comparingInt((TaskView view) -> view.dueState().ordinal());
 
@@ -91,6 +94,18 @@ public class TaskService {
         }
         repository.deleteById(id);
         return true;
+    }
+
+    /** Hand a task to someone else straight from the card, no modal (M7). */
+    @Transactional
+    public Optional<Task> assign(Long id, String assignee) {
+        if (!ASSIGNEES.contains(assignee)) {
+            return Optional.empty();
+        }
+        return repository.findById(id).map(task -> {
+            task.setAssignee(assignee);
+            return repository.save(task);
+        });
     }
 
     TaskView toView(Task task, LocalDate today) {

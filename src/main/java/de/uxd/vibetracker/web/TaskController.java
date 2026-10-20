@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.Optional;
@@ -77,6 +78,20 @@ public class TaskController {
     public String delete(@PathVariable Long id, RedirectAttributes redirect) {
         boolean removed = taskService.delete(id);
         redirect.addFlashAttribute("toast", removed ? "Task deleted." : "That task no longer exists.");
+        return "redirect:/";
+    }
+
+    /** "Hand off to…" on the card — assignment without opening the modal (M7). */
+    @PostMapping("/{id}/assignee")
+    public String reassign(@PathVariable Long id, @RequestParam String assignee, RedirectAttributes redirect) {
+        if (!BoardPage.TEAM.contains(assignee)) {
+            redirect.addFlashAttribute("toast", "Unknown assignee.");
+            return "redirect:/";
+        }
+        Optional<Task> updated = taskService.assign(id, assignee);
+        redirect.addFlashAttribute("toast", updated
+                .map(task -> "Handed off to " + task.getAssignee() + ".")
+                .orElse("That task no longer exists."));
         return "redirect:/";
     }
 }
