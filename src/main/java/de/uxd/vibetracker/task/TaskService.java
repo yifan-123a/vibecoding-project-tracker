@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
@@ -34,11 +35,25 @@ public class TaskService {
 
     /** Four columns in the canonical order, empty ones included. */
     public List<ColumnView> board(LocalDateTime now) {
+        return board(now, null);
+    }
+
+    /**
+     * Same board, optionally filtered by a free-text query (extra feature).
+     * Matching happens server-side so the filter is a URL, not client state:
+     * {@code /?q=context} is shareable and survives a refresh.
+     */
+    public List<ColumnView> board(LocalDateTime now, String query) {
+        String needle = query == null || query.isBlank() ? null : query.trim().toLowerCase(Locale.ROOT);
+
         Map<TaskStatus, List<TaskView>> grouped = new EnumMap<>(TaskStatus.class);
         for (TaskStatus status : TaskStatus.values()) {
             grouped.put(status, new ArrayList<>());
         }
         for (Task task : repository.findAll()) {
+            if (needle != null && !matches(task, needle)) {
+                continue;
+            }
             grouped.get(task.getStatus()).add(toView(task, now));
         }
 
@@ -49,6 +64,21 @@ public class TaskService {
             columns.add(new ColumnView(status.getId(), status.getLabel(), tasks));
         }
         return columns;
+    }
+
+    public int countAll() {
+        return (int) repository.count();
+    }
+
+    private static boolean matches(Task task, String needle) {
+        return contains(task.getTitle(), needle)
+                || contains(task.getDescription(), needle)
+                || contains(task.getContext(), needle)
+                || contains(task.getAssignee(), needle);
+    }
+
+    private static boolean contains(String value, String needle) {
+        return value != null && value.toLowerCase(Locale.ROOT).contains(needle);
     }
 
     public Optional<Task> find(Long id) {

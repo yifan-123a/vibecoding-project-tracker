@@ -169,9 +169,19 @@ consumes the names from §8. M4 unblocks everything in M5–M8. M9 must land bef
 nothing to copy otherwise). M11 and M12 are the first things to cut when the clock runs out.
 
 **Colour is a user preference, not a brand decision.** M6 and M8 must be built against the CSS-variable
-tokens (`src/theme.js`, `--c-<token>` in `src/index.css`), never against hex literals — otherwise 8b means
-rewriting both of them. Defaults live in DESIGN.md §2; the user's choice wins and is persisted in
-`Settings`.
+tokens (`src/app.css` `--c-<token>`, set per request by `SettingsService.themeCss`), never against hex
+literals — otherwise 8b means rewriting both of them. Defaults live in DESIGN.md §2; the user's choice wins
+and is persisted in `Settings`.
+
+### 9a. Beyond the milestones
+
+Three additions the brief did not ask for. Each one is a daily-use argument, not a decoration:
+
+| Addition | What it does | Why it earns its keep |
+|---|---|---|
+| **Filter** (`/?q=…`) | Narrows all four columns by title, description, context or assignee | Past ~15 cards, scanning four columns is slower than typing one word. Living in the URL means a filtered view is bookmarkable and cannot desync from the data. |
+| **Board export** (`/board.md`) | Whole board as Markdown | The weekly status update stops being retyping: paste it into a chat, a commit or the report. Reuses the Copy Context serialiser, so there is one Markdown dialect, not two. |
+| **Anchor link validation + Open** | Rejects non-http(s) values, links out from filled slots | A broken "deliverable link" is worse than an empty slot — it fails when the panel clicks it during the pitch. The Open link also makes the deck one click away on stage. |
 
 ## 10. AI / vibe coding angle
 

@@ -23,12 +23,38 @@
     </div>
 
     <div class="topbar-actions">
+        <form class="search" method="get" th:action="@{/}" role="search">
+            <input type="search" name="q" th:value="${q}" placeholder="Filter tasks"
+                   aria-label="Filter tasks by title, description, context or assignee" autocomplete="off">
+        </form>
+        <a class="btn btn-ghost" th:href="@{/board.md}"
+           title="The board as Markdown — paste it into a status update">Export</a>
         <button type="button" class="btn btn-ghost" data-open-settings aria-haspopup="dialog">
             Colours
         </button>
         <a class="btn btn-primary" th:href="@{/(create=true)}">+ Task</a>
     </div>
 </header>
+
+<!-- M11: the four deliverables, pinned above the board. -->
+<section class="anchor-bar" aria-label="Final deliverables">
+    <form class="anchor" th:each="a : ${anchors}"
+          th:action="@{/anchors/{key}(key=${a.key})}" method="post">
+        <div class="anchor-head">
+            <span class="anchor-dot" th:classappend="${a.filled} ? 'is-filled' : ''" aria-hidden="true"></span>
+            <label th:for="${'anchor-' + a.key}" th:text="${a.label}">Presentation</label>
+            <a class="anchor-open" th:if="${a.filled}" th:href="${a.url}" target="_blank" rel="noopener"
+               th:attr="aria-label=${'Open the ' + a.label + ' link'}">Open</a>
+        </div>
+        <div class="anchor-input">
+            <input type="url" th:id="${'anchor-' + a.key}" name="url" th:value="${a.url}"
+                   placeholder="No link yet" autocomplete="off" spellcheck="false"
+                   th:attr="aria-label=${a.label + ' link'}">
+            <button type="submit" class="anchor-save"
+                    th:attr="aria-label=${'Save the ' + a.label + ' link'}, title=${'Save the ' + a.label + ' link'}">&#10003;</button>
+        </div>
+    </form>
+</section>
 
 <main class="board" aria-label="Kanban board">
     <section class="column" th:each="col : ${columns}" th:attr="data-status=${col.id}">
@@ -38,7 +64,8 @@
         </header>
 
         <div class="cards">
-            <p class="empty" th:if="${col.empty}">Nothing here yet — keep going.</p>
+            <p class="empty" th:if="${col.empty}"
+               th:text="${filtering} ? 'No match in this column.' : 'Nothing here yet — keep going.'">Nothing here yet — keep going.</p>
 
             <article class="card"
                      th:each="card : ${col.tasks}"
@@ -101,6 +128,10 @@
     <span class="legend-item"><span class="legend-dot dot-warning"></span> Due within 24 hours</span>
     <span class="legend-item"><span class="legend-dot dot-overdue"></span> Past due</span>
     <span class="legend-item"><span class="legend-dot dot-neutral"></span> Done / no date</span>
+
+    <span class="legend-filter" th:if="${filtering}" th:with="counts=${visibleTasks + ' of ' + totalTasks + ' tasks'}">
+        <span th:text="${counts}">3 of 6 tasks</span> · <a th:href="@{/}">clear filter</a>
+    </span>
 </footer>
 
 <div class="scrim" data-scrim hidden></div>

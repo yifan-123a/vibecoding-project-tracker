@@ -54,9 +54,19 @@ git push
 | 8 | `due-tint` | Cards tint by deadline | done (+ colour key under the board) |
 | 9 | `context` | Context field on the task modal | done (textarea + AI tool + "updated N ago") |
 | 10 | `copy-prompt` | One-click copy of the Markdown briefing | done (card button + modal button) |
-| 11 | `project-deliverables` | Deliverable anchor banner | later |
+| 11 | `project-deliverables` | Deliverable anchor banner | done (4 slots, validation, Open link) |
 | 12 | `secret-sauce` | The one thing that makes it yours | later |
 | 13 | `pitch-ready` | Demo dataset + rehearsed pitch | later |
+
+### Extras beyond the brief
+
+Added because they earn their place, not for the checkbox:
+
+| Extra | Where | Why it is useful |
+|---|---|---|
+| **Filter** | `/?q=…`, the topbar field | Past ~15 cards, finding "the one about auth" is faster by typing than by scanning four columns. It is a URL, so a filtered view can be bookmarked or shared — no client state to break. |
+| **Export** | `/board.md`, the "Export" button | The weekly status update writes itself: paste the board into a chat, a commit message or the report. Reuses the same Markdown machinery as Copy Context. |
+| **Link validation + Open** | anchor banner | A "deliverable link" that is not a URL is worse than an empty one — the panel warns instead of silently accepting it, and a filled slot gets an Open link so the deck is one click away during the pitch. |
 
 ## Repo map
 

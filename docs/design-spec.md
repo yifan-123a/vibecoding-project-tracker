@@ -36,6 +36,8 @@ can pick a card up and continue without re-deriving everything. The hero interac
 | FR-15 | One self-chosen differentiator that is visible in the demo and breaks nothing else. | M12 | Should |
 | FR-16 | A curated demo dataset and a rehearsed 5-minute pitch. | M13 | Must |
 | FR-17 | The user recolours the six semantic states (feature, bug, due ×4) from a settings panel; the choice persists and can be reset. | mid-hack added | Should |
+| FR-18 | A free-text filter narrows the board by title, description, context or assignee, and lives in the URL (`?q=`). | extra | Should |
+| FR-19 | `/board.md` returns the whole board as Markdown for a status update. | extra | Should |
 
 **Out of scope** (deliberately): auth, real GitHub integration, mobile layout, multi-team, real-time collaboration.
 
@@ -259,6 +261,8 @@ warmed a few minutes before the pitch.
 | done | FR-10 (M7): assignee + reassign | badge on card, assignment saved from the modal |
 | done | FR-12 (M9): Context field, AI-tool select, "updated N ago" | context survives reload; stamp only moves on a real edit |
 | done | FR-13 (M10): Copy Context Markdown + toast | `GET /tasks/{id}/context` returns a paste-ready block; button copies it |
+| done | FR-14 (M11): four pinned deliverable slots | saved links survive reload; bad URLs are rejected; filled slots link out |
+| done | FR-18/19 (extras): filter in the URL, board export | `/?q=` narrows the cards; `/board.md` pastes into a chat as a status update |
 | later | FR-14/15/16 (M11–M13): anchors, differentiator, demo data | rehearsed 5-minute talk track |
 
 ---
