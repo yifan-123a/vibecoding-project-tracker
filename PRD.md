@@ -162,7 +162,7 @@ layer that makes it feel finished, P2 is only if the clock is generous.
 | 10 | `copy-prompt` | Copy Context button | P0 | Markdown block pastes cleanly into an AI chat |
 | 11 | `project-deliverables` | Deliverable anchor banner | P2 | four slots accept a URL and survive reload |
 | 12 | `secret-sauce` | One differentiator | P2 | visible in the demo, breaks nothing else |
-| 13 | `pitch-ready` | Demo dataset + rehearsal | P0 | 5-minute talk track timed and rehearsed |
+| 13 | `pitch-ready` | Demo dataset + rehearsal | P0 | eight demo tasks (two per column, every due-state once, two contexts), 5-minute talk track timed |
 
 **Dependency chain.** M2 + M3 are documents — do them first because M6 and M8 consume the colors and M4
 consumes the names from §8. M4 unblocks everything in M5–M8. M9 must land before M10 (Copy Context has
@@ -182,6 +182,8 @@ Three additions the brief did not ask for. Each one is a daily-use argument, not
 | **Filter** (`/?q=…`) | Narrows all four columns by title, description, context or assignee | Past ~15 cards, scanning four columns is slower than typing one word. Living in the URL means a filtered view is bookmarkable and cannot desync from the data. |
 | **Board export** (`/board.md`) | Whole board as Markdown | The weekly status update stops being retyping: paste it into a chat, a commit or the report. Reuses the Copy Context serialiser, so there is one Markdown dialect, not two. |
 | **Anchor link validation + Open** | Rejects non-http(s) values, links out from filled slots | A broken "deliverable link" is worse than an empty slot — it fails when the panel clicks it during the pitch. The Open link also makes the deck one click away on stage. |
+| **First-run hint + `/` and `n` shortcuts** | One dismissible line explaining drag and copy; two keyboard shortcuts | Drag and Copy are invisible affordances. Naming them once is cheaper than a tutorial, and the shortcuts serve the two actions a single user repeats all day. |
+| **Skip link, live toasts, branded 404** | Page shell | Keyboard users skip the topbar; screen readers hear the toast; a mistyped URL still looks like the product rather than a stack trace. |
 
 ## 10. AI / vibe coding angle
 

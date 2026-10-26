@@ -126,6 +126,11 @@ One sentence per element; these are the rules the build phase is checked against
 - **Settings panel:** right-hand drawer, 320 px, one row per state (`label` · swatch · hex field · contrast
   note), no save button — the board behind it is the preview; `Reset to defaults` sits at the bottom in the
   outline style.
+- **Onboarding:** one dismissible line under the anchor banner names the three things nobody can guess
+  (drag, click, copy) plus the two shortcuts (`/`, `n`). Dismissed once, never shown again — no tour, no
+  coach marks, no video.
+- **Status page (404):** same wordmark, one sentence, one button back. A wrong URL should look like the
+  product, not like a server error.
 
 ## 5. Voice / microcopy
 

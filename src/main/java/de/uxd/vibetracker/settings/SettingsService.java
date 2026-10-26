@@ -1,5 +1,6 @@
 package de.uxd.vibetracker.settings;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -24,9 +25,15 @@ public class SettingsService {
         this.repository = repository;
     }
 
-    /** The singleton row, created on first read. */
+    /** The singleton row, created on first read (race-safe: two requests may race). */
     public Settings current() {
-        return repository.findById(1L).orElseGet(() -> repository.save(Settings.defaults()));
+        return repository.findById(1L).orElseGet(() -> {
+            try {
+                return repository.save(Settings.defaults());
+            } catch (DataIntegrityViolationException createdByAnotherRequest) {
+                return repository.findById(1L).orElseThrow();
+            }
+        });
     }
 
     public Settings save(SettingsForm form) {

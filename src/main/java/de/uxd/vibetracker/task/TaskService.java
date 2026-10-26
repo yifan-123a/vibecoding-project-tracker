@@ -228,9 +228,10 @@ public class TaskService {
         return "Due in " + days + " days";
     }
 
-    /** Only the six known tools are stored; anything else becomes "not set". */
+    /** Only the six known tools are stored; anything else (including null) becomes "not set". */
     private static String contextTool(String candidate) {
-        return AI_TOOLS.contains(candidate) ? candidate : null;
+        // Immutable lists throw on contains(null); the blank dropdown sends exactly that.
+        return candidate != null && AI_TOOLS.contains(candidate) ? candidate : null;
     }
 
     private static String trimToNull(String value) {

@@ -11,6 +11,62 @@
 (function () {
     'use strict';
 
+    /* --------------------------------------------------- first-run hint + keys */
+
+    const HINT_KEY = 'vibetracker.hint.dismissed';
+    const hint = document.querySelector('[data-hint]');
+
+    if (hint) {
+        let dismissed = false;
+        try {
+            dismissed = window.localStorage.getItem(HINT_KEY) === '1';
+        } catch (error) {
+            dismissed = false;
+        }
+        hint.hidden = dismissed;
+
+        const dismiss = hint.querySelector('[data-dismiss-hint]');
+        if (dismiss) {
+            dismiss.addEventListener('click', function () {
+                hint.hidden = true;
+                try {
+                    window.localStorage.setItem(HINT_KEY, '1');
+                } catch (error) {
+                    /* private mode: the hint simply comes back next time */
+                }
+            });
+        }
+    }
+
+    // Two shortcuts, both advertised in the hint bar. Ignored while typing.
+    document.addEventListener('keydown', function (event) {
+        const target = event.target;
+        const typing = target && (
+            target.tagName === 'INPUT' ||
+            target.tagName === 'TEXTAREA' ||
+            target.tagName === 'SELECT' ||
+            target.isContentEditable);
+
+        if (typing || event.metaKey || event.ctrlKey || event.altKey) {
+            return;
+        }
+        if (document.querySelector('.modal')) {
+            return; // the modal owns the keyboard while it is open
+        }
+
+        if (event.key === '/') {
+            const search = document.querySelector('.search input');
+            if (search) {
+                event.preventDefault();
+                search.focus();
+                search.select();
+            }
+        } else if (event.key === 'n') {
+            event.preventDefault();
+            window.location.assign('/?create=true');
+        }
+    });
+
     const drawer = document.querySelector('[data-drawer]');
     const scrim = document.querySelector('[data-scrim]');
     const openButton = document.querySelector('[data-open-settings]');
