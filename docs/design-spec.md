@@ -21,11 +21,11 @@ can pick a card up and continue without re-deriving everything. The hero interac
 |---|---|---|---|
 | FR-1 | Board renders exactly four columns: To Do, In Progress, Review, Done. | M4 | Must |
 | FR-2 | A task has `id, title, description, type, status, assignee, dueDate, createdDate` and is stored server-side. | M4 | Must |
-| FR-3 | Board is pre-populated with 3–4 demo tasks on a fresh database. | M4 | Must |
+| FR-3 | Board is pre-populated with eight demo tasks (two per column, every due state once, two with context) on a fresh database. | M13 | Must |
 | FR-4 | Create task via a "+" button that opens a modal containing every task field. | M5 | Must |
 | FR-5 | Edit task by clicking its card — same modal, pre-filled. | M5 | Must |
 | FR-6 | Delete task from the modal, behind a confirm step. | M5 | Must |
-| FR-7 | Status is changed inside the modal (dropdown). No drag-and-drop. | M5 | Must |
+| FR-7 | Status changes inside the modal (dropdown); dragging the card is a second entry point (M12), never the only one. | M5 / M12 | Must |
 | FR-8 | All mutations survive a page reload (persistence). | M5 | Must |
 | FR-9 | `feature` vs `bug` tasks are visually distinct everywhere a task renders (color + icon). | M6 | Must |
 | FR-10 | Each card shows the assignee; the modal offers "Hand off to…" which reassigns and confirms visually. | M7 | Must |
@@ -33,7 +33,7 @@ can pick a card up and continue without re-deriving everything. The hero interac
 | FR-12 | Modal has a `context` textarea, an optional AI-tool dropdown, and an auto-set "last updated N ago" label. | M9 | Must |
 | FR-13 | "Copy Context" copies the task as formatted Markdown to the clipboard, with a toast. | M10 | Must |
 | FR-14 | Four deliverable slots (Presentation, Demo, Report, Documentation) pinned above the board, each with a URL field and an empty/filled indicator, persisted. | M11 | Should |
-| FR-15 | One self-chosen differentiator that is visible in the demo and breaks nothing else. | M12 | Should |
+| FR-15 | Dragging a card between columns moves it and persists (the self-chosen differentiator). | M12 | Should |
 | FR-16 | A curated demo dataset and a rehearsed 5-minute pitch. | M13 | Must |
 | FR-17 | The user recolours the six semantic states (feature, bug, due ×4) from a settings panel; the choice persists and can be reset. | mid-hack added | Should |
 | FR-18 | A free-text filter narrows the board by title, description, context or assignee, and lives in the URL (`?q=`). | extra | Should |
@@ -48,13 +48,13 @@ can pick a card up and continue without re-deriving everything. The hero interac
 | ID | Requirement | Target / how it is measured |
 |---|---|---|
 | NFR-1 | **Persistence & durability** | Every mutation is committed before the UI confirms it; reload restores identical state. Data lives in the Spring Boot DB, not only in the browser. |
-| NFR-2 | **Demo resilience** | If the API is unreachable, the board still renders from a local cache and shows an "offline" badge. No blank screen during the pitch. |
+| NFR-2 | **Server-rendered, single process** | The board is HTML from the server: one deployable, no CORS, no client cache to go stale. The trade-off (a dead server means a dead board) is accepted because the whole app ships as one JAR. |
 | NFR-3 | **Latency** | Read API p95 < 150 ms locally; board first paint < 1 s; modal open < 100 ms. |
 | NFR-4 | **Accessibility** | Full keyboard path (Tab order, Esc closes modal, focus trapped in modal, focus returns to the invoking card), `aria-label` on icon buttons, contrast ≥ 4.5:1 for body text. |
-| NFR-5 | **Consistency** | Every color/spacing value comes from `tailwind.config.js` tokens. Same status/type/due semantics on board, card and modal. |
+| NFR-5 | **Consistency** | Every colour and spacing value comes from the `--c-*` tokens in `app.css`; the same status/type/due semantics on board, card and modal. No hex literal below the `:root` block. |
 | NFR-6 | **Maintainability** | One data-access interface for the whole UI; components never call `fetch` directly. No magic strings for statuses or types. |
 | NFR-7 | **Security (minimum viable)** | Server-side validation of every payload, no secrets in the frontend bundle, CORS restricted to known origins. |
-| NFR-8 | **Deployability** | Frontend: Vercel static build. Backend: single executable JAR with an embedded DB; API base URL injected at build time via `VITE_API_URL`. |
+| NFR-8 | **Deployability** | One executable JAR, or the provided Dockerfile; the `prod` profile runs an in-memory database and re-seeds the demo, so a restart is a reset. |
 | NFR-9 | **Time budget** | Everything above reachable in ~3 h by 1–2 people. Anything that cannot be cut in 5 minutes is a risk and needs a fallback (see §9). |
 | NFR-10 | **Desktop-first layout** | Optimised for 1280–1920 px; degrades without breaking at 1024 px. |
 | NFR-11 | **User-chosen colours stay readable** | Every editable colour is measured against white; < 4.5:1 warns, < 3:1 warns harder, none are blocked. Text on solid fills picks its own ink (`readableInk`). Colour is never a hard-coded literal in a component. |
