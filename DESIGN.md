@@ -131,6 +131,9 @@ One sentence per element; these are the rules the build phase is checked against
   coach marks, no video.
 - **Status page (404):** same wordmark, one sentence, one button back. A wrong URL should look like the
   product, not like a server error.
+- **Scrolling:** the page scrolls as one document and the topbar sticks. Columns do *not* scroll
+  independently — four wheel targets on one screen is a coin flip for the user, and a short window used to
+  clip the board with no way to reach the bottom.
 
 ## 5. Voice / microcopy
 

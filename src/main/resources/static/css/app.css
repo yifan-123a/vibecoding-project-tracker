@@ -49,6 +49,7 @@ body {
 body {
     display: flex;
     flex-direction: column;
+    min-height: 100vh;
     margin: 0;
     background: var(--c-surface-page);
     color: var(--c-ink-primary);
@@ -56,7 +57,10 @@ body {
     font-size: 14px;
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
-    overflow: hidden;
+    /* The page scrolls as one document. Columns scroll individually would mean
+       four separate wheel targets on the same screen. */
+    overflow-x: hidden;
+    overflow-y: auto;
 }
 
 :focus-visible {
@@ -176,6 +180,9 @@ body.status-page {
 /* ---------------------------------------------------------------- topbar */
 
 .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -442,7 +449,7 @@ body.status-page {
     display: grid;
     grid-template-columns: repeat(4, minmax(220px, 1fr));
     gap: 16px;
-    flex: 1 1 auto;
+    flex: 1 0 auto;
     min-height: 0;
     padding: 16px 24px 8px;
 }
@@ -491,8 +498,6 @@ body.status-page {
     gap: 8px;
     min-height: 0;
     padding: 2px;
-    overflow-y: auto;
-    overscroll-behavior: contain;
 }
 
 .cards::-webkit-scrollbar {
