@@ -19,3 +19,6 @@ node_modules/
 .vscode
 .DS_Store
 *.log
+
+# Author-side assessment material (report skeleton, evidence pack) - not part of the code project
+docs/assessment/
