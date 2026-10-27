@@ -18,12 +18,14 @@
     <description>Vibecoding Project Tracker — Thymeleaf + Spring Boot</description>
 
     <properties>
-        <java.version>25</java.version>
+        <!-- Java 21 LTS: builds and runs on every hosting image without extra setup.
+             (The code itself needs nothing newer — text blocks, records, List.of.) -->
+        <java.version>21</java.version>
         <!-- Pinned explicitly so an IDE import cannot fall back to the
-             "JVM target 5" default that breaks compilation on JDK 25. -->
-        <maven.compiler.release>25</maven.compiler.release>
-        <maven.compiler.source>25</maven.compiler.source>
-        <maven.compiler.target>25</maven.compiler.target>
+             "JVM target 5" default that breaks compilation. -->
+        <maven.compiler.release>21</maven.compiler.release>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 

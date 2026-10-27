@@ -111,7 +111,7 @@ expanded, anything else is rejected and the default stays).
 | UI | **Thymeleaf** server-rendered templates | One runtime. The board is HTML the server already knows how to produce — no SPA, no client fetch, no hydration. |
 | Styling | One hand-written stylesheet (`app.css`) on CSS custom properties | No build step and no JIT; every colour is already a variable, which is exactly what the colour picker needs. |
 | Behaviour | Vanilla JS (`app.js`, no framework) | It does two things: open the drawer, preview a colour. A framework would cost more than it saves. |
-| Backend | **Spring Boot 3.5** (Java 25), Spring MVC + Thymeleaf + Data JPA + Validation | Real persistence and a real CRUD surface; form POST → redirect is enough for this UI. |
+| Backend | **Spring Boot 3.5** (Java 21 LTS), Spring MVC + Thymeleaf + Data JPA + Validation | Real persistence and a real CRUD surface; form POST → redirect is enough for this UI. |
 | Database | H2, file-based (`jdbc:h2:file:./data/vibetracker`) | Zero-install, survives restarts, no migration scripts. |
 | Theming | CSS variables injected inline from `Settings` | The user's colours arrive with the HTML, so there is no flash of the defaults and no client state. |
 | Deploy | One executable JAR (`mvn package`) | A static host cannot run a JVM; the JAR on the laptop is the most reliable thing to demo. |

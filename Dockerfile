@@ -1,14 +1,23 @@
-# Demo deployment image. Build first: mvn -DskipTests package
-FROM eclipse-temurin:25-jre
+# --- build stage ------------------------------------------------------------
+# Maven runs inside the image, so a fresh clone can be deployed without a local
+# build and without committing a 55 MB JAR.
+FROM maven:3.9-eclipse-temurin-21 AS build
+WORKDIR /src
 
+COPY pom.xml .
+RUN mvn -B -q dependency:go-offline
+
+COPY src ./src
+RUN mvn -B -DskipTests package
+
+# --- run stage --------------------------------------------------------------
+FROM eclipse-temurin:21-jre
 WORKDIR /app
-COPY target/vibetracker-0.1.0.jar app.jar
+COPY --from=build /src/target/vibetracker-0.1.0.jar app.jar
 
-# Render/Railway/Fly inject PORT; Spring maps SERVER_PORT itself, so no shell tricks.
-ENV SERVER_PORT=8080
-# The prod profile uses an in-memory database so a restart re-seeds the demo data
-# instead of depending on a writable disk.
+# Hosted demo: in-memory database, re-seeded on every boot (see application-prod.yml).
 ENV SPRING_PROFILES_ACTIVE=prod
 
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Render/Railway/Fly inject PORT; fall back to 8080 for a plain `docker run`.
+ENTRYPOINT ["sh", "-c", "java -jar app.jar --server.port=${PORT:-8080}"]

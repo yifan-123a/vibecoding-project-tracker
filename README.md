@@ -21,7 +21,7 @@ Context field, and the Copy Context button — the demo's hero moment.
 git clone https://github.com/<your-team>/<your-fork>.git
 cd <your-fork>
 
-# 2. Run it — needs a JDK. The build targets Java 25 (Boot 3.5 works on 21+).
+# 2. Run it — needs JDK 21 or newer (the build targets Java 21 LTS).
 mvn spring-boot:run
 ```
 
@@ -77,7 +77,7 @@ Added because they earn their place, not for the checkbox:
 ├── PRD.md                     ← scope, data model, priorities (v2, solo)
 ├── DESIGN.md                  ← palette, type, component rules, voice
 ├── README.md                  ← you are here
-├── pom.xml                    ← Spring Boot 3.5 · Java 25 · web, thymeleaf, data-jpa, h2
+├── pom.xml                    ← Spring Boot 3.5 · Java 21 · web, thymeleaf, data-jpa, h2
 ├── docs/
 │   ├── design-spec.md         ← FR/NFR, routes, module layout, build order
 │   └── shots/                 ← screenshots of the current board and drawer
